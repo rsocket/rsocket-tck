@@ -1,4 +1,4 @@
-package com.facebook.lithium
+package io.reactivesocket.tck
 
 class Scratch {
 

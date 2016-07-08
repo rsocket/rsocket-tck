@@ -1,4 +1,4 @@
-package com.facebook.lithium;
+package io.reactivesocket.tck;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -6,9 +6,7 @@ import io.reactivesocket.Payload;
 import org.reactivestreams.Subscriber;
 
 import java.text.StringCharacterIterator;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 // Every time request n is called, there should be a call to parse n in this class, which will handle making sure
 // that the request is respected

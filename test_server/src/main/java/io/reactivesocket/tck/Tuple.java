@@ -1,4 +1,4 @@
-package com.facebook.lithium;
+package io.reactivesocket.tck;
 
 
 import org.apache.commons.lang3.builder.HashCodeBuilder;

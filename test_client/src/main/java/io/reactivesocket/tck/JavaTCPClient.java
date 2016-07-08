@@ -1,4 +1,4 @@
-package com.facebook.lithium;
+package io.reactivesocket.tck;
 
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.reactivesocket.*;

@@ -1,4 +1,4 @@
-package com.facebook.lithium;
+package io.reactivesocket.tck;
 
 import io.reactivesocket.Payload;
 import io.reactivex.Notification;

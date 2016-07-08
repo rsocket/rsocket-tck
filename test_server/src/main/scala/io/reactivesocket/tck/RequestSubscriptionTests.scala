@@ -1,4 +1,4 @@
-package com.facebook.lithium
+package io.reactivesocket.tck
 
 object RequestSubscriptionTests extends MarbleDSL {
   def main(args: Array[String]) {

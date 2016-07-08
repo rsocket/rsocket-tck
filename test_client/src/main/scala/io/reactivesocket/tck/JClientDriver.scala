@@ -1,4 +1,4 @@
-package com.facebook.lithium
+package io.reactivesocket.tck
 
 import java.io.{BufferedReader, FileReader}
 import java.util.concurrent.{CountDownLatch, TimeUnit}

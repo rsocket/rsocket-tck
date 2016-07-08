@@ -1,4 +1,4 @@
-package com.facebook.lithium
+package io.reactivesocket.tck
 
 object RequestResponseTests extends ClientDSL {
   def main(args: Array[String]) {
