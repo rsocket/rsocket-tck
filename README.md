@@ -48,5 +48,8 @@ Here, we write that we want to create requestResponse handlers that handle some 
 the same syntax as the marble diagrams in the rxjs project [here](https://github.com/ReactiveX/rxjs/blob/master/doc/writing-marble-tests.md#marble-syntax). Users can also directly write the marble diagram into the test cases
 instead of using the programatic notion we have here, so one can write something like `requestResponse handle("x", "y") using ("---a---|")`.
 
+## Run Instructions
+This project is managed with sbt. Simply navigate to the root directory with build.sbt and run `sbt assembly`. You can then use `./run <scriptfile>` to run the server or client with a specific script file.
+
 ## TODO
 We are still working on getting tests for channel set up, and will also reorganize the project in the future. Please feel free to contact us with any suggestions.
