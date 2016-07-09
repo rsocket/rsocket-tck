@@ -39,11 +39,48 @@ class ClientDSL {
     writer.close()
   }
 
+  def begintest(test : () => Unit) : Unit = {
+    writer.write("!\n")
+    test()
+  }
+
+  def nametest(name: String) : Unit = writer.write("name%%" + name + "\n")
+
 }
 
 object clienttest extends ClientDSL {
   def main(args: Array[String]) {
-    val s1 = requestChannel(Map("a" -> ("hello", "goodbye")), "---a---b----c--d--e--")
-    end()
+    begintest(test1)
+    begintest(test2)
+    begintest(test3)
+    end
+  }
+
+  def test1() : Unit = {
+    nametest("test1")
+    val s1 = requestResponse("a", "b")
+    s1 request 1
+    s1 awaitTerminal()
+    s1 assertCompleted()
+  }
+
+  def test2() : Unit = {
+    nametest("test2")
+    val s1 = requestResponse("c", "d")
+    s1 request 1
+    s1 awaitTerminal()
+    s1 assertReceived List(("ding", "dong"))
+    s1 assertCompleted()
+    s1 assertNotCompleted()
+    s1 assertNoErrors()
+  }
+
+  def test3() : Unit = {
+    nametest("test3")
+    val s1 = requestResponse("e", "f")
+    s1 request 1
+    s1 awaitTerminal()
+    s1 assertError()
+    s1 assertNotCompleted()
   }
 }

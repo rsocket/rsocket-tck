@@ -36,7 +36,7 @@ public class JavaTCPClient {
         }
 
         ClientDriver jd = new ClientDriver(client, file);
-        jd.parse();
+        jd.runTests();
 
     }
 

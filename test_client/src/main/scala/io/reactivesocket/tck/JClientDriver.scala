@@ -17,11 +17,36 @@ class ClientDriver(client: ReactiveSocket, path: String) {
   private val fnfSubscribers = new mutable.HashMap[String, TestSubscriber[Void]]
   private val idToType = new mutable.HashMap[String, String]
 
-  def parse() : Unit = {
-
-    var line : String = reader.readLine
-
+  def runTests() : Unit = {
+    var tests : List[List[String]] = List()
+    var test : List[String] = List()
+    var line = reader.readLine
     while (line != null) {
+      line match {
+          // test separator
+        case "!" => {
+          tests = tests :+ test
+          test = List()
+        }
+        case _ => {
+          test = test :+ line
+        }
+      }
+      line = reader.readLine
+    }
+    tests = tests :+ test
+    tests = tests.tail // the first list is always empty
+    println(tests)
+    for (test <- tests) {
+      val thread = new TestThread(test)
+      thread.start()
+      thread.join()
+    }
+  }
+
+  def parse(test: List[String]) : Unit = {
+
+    for (line <- test) {
       val args : Array[String] = line.split("%%")
 
       // the over arching cases, each case will have their own sub cases
@@ -99,11 +124,9 @@ class ClientDriver(client: ReactiveSocket, path: String) {
         }
 
         case "EOF" => {
-          System.exit(0)
+
         }
       }
-
-      line = reader.readLine
     }
 
   }
@@ -284,6 +307,30 @@ class ClientDriver(client: ReactiveSocket, path: String) {
     val id = args(2)
     val sub = payloadSubscribers.get(id).get
     sub.isCancelled
+  }
+
+  /**
+    * A class that calls parse given a single test
+    */
+  private class TestThread(test: List[String]) extends Runnable {
+    private val t : Thread = new Thread(this)
+    override def run() : Unit = {
+      var name : String = ""
+      if (test.head.startsWith("name")) {
+        name = test.head.split("%%")(1)
+        println("Starting test " + name)
+        parse(test.tail)
+        println(name + " passed")
+      } else {
+        println("Starting test")
+        parse(test)
+        println("Test passed")
+      }
+
+    }
+
+    def start() : Unit = t.start
+    def join() : Unit = t.join()
   }
 
 }
