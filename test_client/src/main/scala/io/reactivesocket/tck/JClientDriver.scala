@@ -2,15 +2,22 @@ package io.reactivesocket.tck
 
 import java.io.{BufferedReader, FileReader}
 import java.util.concurrent.{CountDownLatch, TimeUnit}
-import java.util.function.Consumer
 
 import scala.collection.mutable
 import io.reactivesocket.{DefaultReactiveSocket, Payload, ReactiveSocket}
 import org.reactivestreams.{Publisher, Subscriber, Subscription}
 
-import scala.collection.mutable.ListBuffer
-
 class ClientDriver(client: ReactiveSocket, path: String) {
+
+  val ANSI_RESET: String = "\u001B[0m"
+  val ANSI_BLACK: String = "\u001B[30m"
+  val ANSI_RED: String = "\u001B[31m"
+  val ANSI_GREEN: String = "\u001B[32m"
+  val ANSI_YELLOW: String = "\u001B[33m"
+  val ANSI_BLUE: String = "\u001B[34m"
+  val ANSI_PURPLE: String = "\u001B[35m"
+  val ANSI_CYAN: String = "\u001B[36m"
+  val ANSI_WHITE: String = "\u001B[37m"
 
   private val reader: BufferedReader = new BufferedReader(new FileReader(path))
   private val payloadSubscribers = new mutable.HashMap[String, TestSubscriber[Payload]]
@@ -36,7 +43,6 @@ class ClientDriver(client: ReactiveSocket, path: String) {
     }
     tests = tests :+ test
     tests = tests.tail // the first list is always empty
-    println(tests)
     for (test <- tests) {
       val thread = new TestThread(test)
       thread.start()
@@ -44,8 +50,8 @@ class ClientDriver(client: ReactiveSocket, path: String) {
     }
   }
 
-  def parse(test: List[String]) : Unit = {
-
+  def parse(test: List[String]) : Boolean = {
+    var id = "";
     for (line <- test) {
       val args : Array[String] = line.split("%%")
 
@@ -55,6 +61,7 @@ class ClientDriver(client: ReactiveSocket, path: String) {
         // right away. The publisher is pretty trivial, and we'd only want to store the subscriber
         case "subscribe" => {
           handle_subscribe(args)
+          id = args(2)
         }
 
         case "await" => {
@@ -129,6 +136,8 @@ class ClientDriver(client: ReactiveSocket, path: String) {
       }
     }
 
+    if (payloadSubscribers.get(id).isDefined) return payloadSubscribers.get(id).get.hasPassed
+    else return fnfSubscribers.get(id).get.hasPassed
   }
 
 
@@ -166,6 +175,8 @@ class ClientDriver(client: ReactiveSocket, path: String) {
         val sub : TestSubscriber[Payload] = new TestSubscriber[Payload](0 : Long);
         payloadSubscribers.put(args(2), sub)
         idToType.put(args(2), args(1)) // keeps track of the type of subscriber this id is referring to
+
+
         val pub : Publisher[Payload] = client.requestChannel(new Publisher[Payload] {
             override def subscribe(s: Subscriber[_ >: Payload]): Unit = {
               s.onSubscribe(new TestSubscription(new ParseMarble(args(3), s)))
@@ -315,16 +326,17 @@ class ClientDriver(client: ReactiveSocket, path: String) {
   private class TestThread(test: List[String]) extends Runnable {
     private val t : Thread = new Thread(this)
     override def run() : Unit = {
+      if (t.isInterrupted) return;
       var name : String = ""
       if (test.head.startsWith("name")) {
         name = test.head.split("%%")(1)
         println("Starting test " + name)
-        parse(test.tail)
-        println(name + " passed")
+        if (parse(test.tail)) println(ANSI_GREEN + name + " passed" + ANSI_RESET)
+        else println(ANSI_RED + name + " failed" + ANSI_RESET)
       } else {
         println("Starting test")
-        parse(test)
-        println("Test passed")
+        if (parse(test)) println(ANSI_GREEN + "Test passed" + ANSI_RESET)
+        else println(ANSI_RED + "Test failed" + ANSI_RESET)
       }
 
     }

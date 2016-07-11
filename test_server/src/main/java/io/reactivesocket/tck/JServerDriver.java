@@ -22,6 +22,9 @@ public class JServerDriver {
     private Map<Tuple<String, String>, String> requestSubscriptionMarbles;
     // channel doesn't have an initial payload, but maybe the first payload sent can be viewed as the "initial"
     private Map<Tuple<String, String>, String> requestChannelMarbles;
+    // hash map of channel subscribers on the server side
+    //private Map<String, TestSubscriber<Payload>> channelSubscribers;
+    private int channelSubCount = 0; // keeps track of the current number of channel subscribers
     private BufferedReader reader;
     // will implement channel later
 
@@ -31,6 +34,7 @@ public class JServerDriver {
         requestStreamMarbles = new HashMap<>();
         requestSubscriptionMarbles = new HashMap<>();
         requestChannelMarbles = new HashMap<>();
+        //channelSubscribers = new HashMap<>();
         try {
             reader = new BufferedReader(new FileReader(path));
         } catch (Exception e) {
@@ -99,7 +103,11 @@ public class JServerDriver {
                 s.onSubscribe(new TestSubscription(pm));
             }
         }).withRequestChannel(payloadPublisher -> s -> { // design flaw
-
+            /*System.out.println("Channel");
+            TestSubscriber<Payload> sub = new TestSubscriber<>();
+            channelSubscribers.put(channelSubCount + "", sub);
+            channelSubCount++;
+            s.onSubscribe(sub);*/
         }).build();
     }
 

@@ -25,6 +25,7 @@ public class ParseMarble {
         iter = new StringCharacterIterator(marble);
         if (marble.contains("&&")) {
             String[] temp = marble.split("&&");
+            iter = new StringCharacterIterator(temp[0]);
             ObjectMapper mapper = new ObjectMapper();
             try {
                 argMap = mapper.readValue(temp[1], new TypeReference<Map<String, Map<String, String>>>() {
@@ -62,13 +63,10 @@ public class ParseMarble {
                     else s.onError(new Throwable("error"));
                     break;
                 case '(':
-                    buffer = "";
-                    grouped = true;
+                    // ignore groupings for now
                     break;
                 case ')':
-                    parseMarble(buffer, s);
-                    grouped = false;
-                    buffer = "";
+                    // ignore groupings for now
                     break;
                 default:
                     if (argMap != null) {
@@ -90,7 +88,7 @@ public class ParseMarble {
         }
     }
 
-    private void parseMarble(String marble, Subscriber<? super Payload> s) {
+    /*private void parseMarble(String marble, Subscriber<? super Payload> s) {
         String buffer = "";
         boolean grouped = false;
 
@@ -141,7 +139,7 @@ public class ParseMarble {
         } catch (Exception e) {
             e.printStackTrace();
         }
-    }
+    }*/
 
     // cancel says that values will eventually stop being sent, which means we can wait till we've processed the initial
     // batch before sending

@@ -77,6 +77,11 @@ public class TestSubscriber<T> implements Subscriber<T>, Subscription, Disposabl
      */
     private CountDownLatch takeLatch = new CountDownLatch(Int.MaxValue());
 
+    /**
+     * Keeps track if this test subscriber is passing
+     */
+    private boolean isPassing = true;
+
     private boolean checkSubscriptionOnce;
 
     private int initialFusionMode;
@@ -481,7 +486,7 @@ public class TestSubscriber<T> implements Subscriber<T>, Subscription, Disposabl
         if (!ce.isEmpty()) {
             ae.initCause(ce);
         }
-        throw ae;
+        isPassing = false;
     }
 
     private void pass(String message, boolean passed) {
@@ -489,6 +494,7 @@ public class TestSubscriber<T> implements Subscriber<T>, Subscription, Disposabl
     }
 
     private void fail(String message) {
+        isPassing = false;
         System.out.println("FAILED: " + message);
     }
 
@@ -1044,6 +1050,10 @@ public class TestSubscriber<T> implements Subscriber<T>, Subscription, Disposabl
         @Override
         public void onComplete() {
         }
+    }
+
+    public boolean hasPassed() {
+        return isPassing;
     }
 
 }

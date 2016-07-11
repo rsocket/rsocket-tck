@@ -12,24 +12,25 @@ import org.json4s.native.Serialization
 
 
 class DSLTestSubscriber(writer : PrintWriter, argMap: Map[String, (String, String)], initData: String,
-                        initMeta: String, kind: String, marble: String) extends Subscriber[Payload] with Subscription {
+                        initMeta: String, kind: String, marble: Map[(String, String), String])
+  extends Subscriber[Payload] with Subscription {
 
   implicit val formats = Serialization.formats(NoTypeHints)
 
   // constructor for requestresponse, requeststream, firenforget, subscription
   def this(writer : PrintWriter, initData: String, initMeta: String, kind: String) = {
-    this(writer, null, initData, initMeta, kind, "")
+    this(writer, null, initData, initMeta, kind, Map())
   }
 
 
   //TODO: will have to extend channel stuff based on what we decide for specifications
   // constructor for channel without argmap
-  def this(writer: PrintWriter, marble: String) {
+  def this(writer: PrintWriter, marble: Map[(String, String), String]) {
     this(writer, null, "", "", "channel", marble)
   }
 
   // constructor for channel with argmap
-  def this(writer: PrintWriter, argMap: Map[String, (String, String)], marble: String) = {
+  def this(writer: PrintWriter, argMap: Map[String, (String, String)], marble: Map[(String, String), String]) = {
     this(writer, argMap, "", "", "channel", marble)
   }
 
@@ -37,8 +38,9 @@ class DSLTestSubscriber(writer : PrintWriter, argMap: Map[String, (String, Strin
   this.id = UUID.randomUUID
 
   // decide what type of subscriber to write down
-  if (kind.equals("channel") && argMap == null) writer.write("subscribe%%channel%%" + this.getID + "%%" + marble + "\n")
-  else if(argMap != null) writer.write("subscribe%%channel%%" + this.getID + "%%" + marble + "&&" + write(argMap)
+  if (kind.equals("channel") && argMap == null) writer.write("subscribe%%channel%%" + this.getID + "%%"
+    + writechannel(marble) + "\n")
+  else if(argMap != null) writer.write("subscribe%%channel%%" + this.getID + "%%" + writechannel(marble) + "&&" + write(argMap)
     + "\n")
   else writer.write("subscribe%%" + kind + "%%" + this.getID + "%%" + initData + "%%" + initMeta + "\n")
 
@@ -97,4 +99,8 @@ class DSLTestSubscriber(writer : PrintWriter, argMap: Map[String, (String, Strin
   // internal functions
 
   private def printList(lst: List[(String, String)]) : String = lst.map(a => a._1 + "," + a._2).mkString("&&")
+
+  private def writechannel(marble: Map[(String, String), String]) : String = {
+    "+" + marble.keys.map(a => a._1 + "@" + a._2 + ":" + marble.get(a).get).mkString(",")
+  }
 }

@@ -7,7 +7,7 @@ public class JavaTCPServer {
 
     public static void main(String[] args) {
 
-        String file = "/Users/mjzhu/fbjava-hg/lithium/experiments/tck/test_server/servertest$.txt";
+        String file = "servertest$.txt";
 
         if (args.length > 0) {
             file = args[0];

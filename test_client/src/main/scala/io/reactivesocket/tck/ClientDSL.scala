@@ -25,11 +25,11 @@ class ClientDSL {
     return new DSLTestSubscriber(writer, data, metadata, "sub");
   }
 
-  def requestChannel(marble: String) : DSLTestSubscriber = {
+  def requestChannel(marble: Map[(String, String), String]) : DSLTestSubscriber = {
     return new DSLTestSubscriber(writer, marble)
   }
 
-  def requestChannel(argMap: Map[String, (String, String)], marble: String) : DSLTestSubscriber = {
+  def requestChannel(argMap: Map[String, (String, String)], marble: Map[(String, String), String]) : DSLTestSubscriber = {
     return new DSLTestSubscriber(writer, argMap, marble)
   }
 
@@ -50,10 +50,19 @@ class ClientDSL {
 
 object clienttest extends ClientDSL {
   def main(args: Array[String]) {
+    //begintest(test0)
     begintest(test1)
     begintest(test2)
     begintest(test3)
     end
+  }
+
+  def test0() : Unit = {
+    val s1 = requestChannel(Map("x" -> ("hello", "goodbye")), Map(
+      ("a", "b") -> "--x--x--|",
+      ("c", "d") -> "----#"
+    )) // sets up the channel handler,
+
   }
 
   def test1() : Unit = {

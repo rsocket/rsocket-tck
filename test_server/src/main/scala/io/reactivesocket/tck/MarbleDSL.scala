@@ -82,12 +82,12 @@ class MarbleDSL {
     }
   }
 
-  object requestChannel extends HandlerImpl {
+/*  object requestChannel extends HandlerImpl {
     override def handle(data: String, meta: String) : Handler = {
       writer.write("channel%%" + data + "%%" + meta + "%%")
       return this
     }
-  }
+  }*/
 
 
   // Marble DSL
@@ -166,6 +166,7 @@ object servertest extends MarbleDSL {
       pause(10), complete)
     requestResponse handle("e", "f") using(pause(10), error)
     requestResponse handle("g", "h") using("-")
+
     end
   }
 }

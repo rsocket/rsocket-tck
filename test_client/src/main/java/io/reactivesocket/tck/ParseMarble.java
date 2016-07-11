@@ -6,9 +6,7 @@ import io.reactivesocket.Payload;
 import org.reactivestreams.Subscriber;
 
 import java.text.StringCharacterIterator;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 // Every time request n is called, there should be a call to parse n in this class, which will handle making sure
 // that the request is respected
@@ -20,6 +18,7 @@ public class ParseMarble {
     private boolean cancelled = false;
     private StringCharacterIterator iter;
     private Map<String, Map<String, String>> argMap;
+    private boolean isChannel = false;
 
     public ParseMarble(String marble, Subscriber<? super Payload> s) {
         this.marble = marble;
@@ -27,6 +26,7 @@ public class ParseMarble {
         iter = new StringCharacterIterator(marble);
         if (marble.contains("&&")) {
             String[] temp = marble.split("&&");
+            iter = new StringCharacterIterator(temp[0]);
             ObjectMapper mapper = new ObjectMapper();
             try {
                 argMap = mapper.readValue(temp[1], new TypeReference<Map<String, Map<String, String>>>() {
@@ -35,11 +35,16 @@ public class ParseMarble {
                 System.out.println("couldn't convert argmap");
             }
         }
+        if (iter.current() == '+') { // if the first character determines this is a channel
+            isChannel = true;
+            iter.next();
+        }
     }
 
     // this parses the actual marble diagram and acts out the behavior
     // should be called upon triggering a handler
     public void parse(long n) {
+
         long numSent = 0;
         // if cancel has been called, don't do anything
         if (cancelled) return;
@@ -64,13 +69,10 @@ public class ParseMarble {
                     else s.onError(new Throwable("error"));
                     break;
                 case '(':
-                    buffer = "";
-                    grouped = true;
+                    // ignore groupings for now
                     break;
                 case ')':
-                    parseMarble(buffer, s);
-                    grouped = false;
-                    buffer = "";
+                    // ignore groupings for now
                     break;
                 default:
                     if (argMap != null) {
@@ -92,7 +94,7 @@ public class ParseMarble {
         }
     }
 
-    private void parseMarble(String marble, Subscriber<? super Payload> s) {
+    /*private void parseMarble(String marble, Subscriber<? super Payload> s) {
         String buffer = "";
         boolean grouped = false;
 
@@ -143,7 +145,7 @@ public class ParseMarble {
         } catch (Exception e) {
             e.printStackTrace();
         }
-    }
+    }*/
 
     // cancel says that values will eventually stop being sent, which means we can wait till we've processed the initial
     // batch before sending
