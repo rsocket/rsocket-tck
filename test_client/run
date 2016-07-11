@@ -1,3 +1,3 @@
 #!/bin/bash
 
-java -cp target/scala-2.11/test_client-assembly-1.0.jar com.facebook.lithium.JavaTCPClient $1
+java -cp target/scala-2.11/test_client-assembly-1.0.jar io.reactivesocket.tck.JavaTCPClient $1
