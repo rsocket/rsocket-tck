@@ -5,7 +5,7 @@ object RequestStreamTests extends ClientDSL {
     val s1 = requestStream("a", "b")
     s1 request 3
     val s2 = requestStream("c", "d")
-    s1 awaitAtMost(3, 70)
+    s1 awaitAtLeast(3, 70)
     s2 request 1
     s1 assertReceived(List(("a", "b"), ("c", "d"), ("e", "f")))
     s1 request 3

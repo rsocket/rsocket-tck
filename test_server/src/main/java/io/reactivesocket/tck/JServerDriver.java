@@ -4,12 +4,17 @@ import io.reactivesocket.Payload;
 import io.reactivesocket.RequestHandler;
 import org.reactivestreams.Subscriber;
 import org.reactivestreams.Subscription;
+import scala.Array;
+import scala.Tuple2;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-
+import java.util.concurrent.TimeUnit;
 
 
 public class JServerDriver {
@@ -21,10 +26,8 @@ public class JServerDriver {
     private Map<Tuple<String, String>, String> requestStreamMarbles;
     private Map<Tuple<String, String>, String> requestSubscriptionMarbles;
     // channel doesn't have an initial payload, but maybe the first payload sent can be viewed as the "initial"
-    private Map<Tuple<String, String>, String> requestChannelMarbles;
-    // hash map of channel subscribers on the server side
-    //private Map<String, TestSubscriber<Payload>> channelSubscribers;
-    private int channelSubCount = 0; // keeps track of the current number of channel subscribers
+    private Map<Tuple<String, String>, List<String>> requestChannelCommands;
+    // first try to implement single channel subscriber
     private BufferedReader reader;
     // will implement channel later
 
@@ -33,7 +36,7 @@ public class JServerDriver {
         requestResponseMarbles = new HashMap<>();
         requestStreamMarbles = new HashMap<>();
         requestSubscriptionMarbles = new HashMap<>();
-        requestChannelMarbles = new HashMap<>();
+        requestChannelCommands = new HashMap<>();
         //channelSubscribers = new HashMap<>();
         try {
             reader = new BufferedReader(new FileReader(path));
@@ -58,8 +61,9 @@ public class JServerDriver {
                         break;
                     case "sub":
                         requestSubscriptionMarbles.put(new Tuple<>(args[1], args[2]), args[3]);
+                        break;
                     case "channel":
-                        requestChannelMarbles.put(new Tuple<>(args[1], args[2]), args[3]);
+                        handle_channel(args, reader);
                     default:
                         break;
                 }
@@ -67,8 +71,10 @@ public class JServerDriver {
                 line = reader.readLine();
             }
 
+
         } catch (Exception e) {
-            System.out.println("reader exception");
+            e.printStackTrace();
+            //System.out.println("reader exception");
         }
 
         return new RequestHandler.Builder().withFireAndForget(payload -> s -> {
@@ -82,6 +88,7 @@ public class JServerDriver {
             System.out.println("requestresponse " + initialPayload.getK() + " " + initialPayload.getV());
             if (marble != null) {
                 ParseMarble pm = new ParseMarble(marble, s);
+                new ParseThread(pm).start();
                 s.onSubscribe(new TestSubscription(pm));
             }
         }).withRequestStream(payload -> s -> {
@@ -91,6 +98,7 @@ public class JServerDriver {
             System.out.println("Stream " + initialPayload.getK() + " " + initialPayload.getV());
             if (marble != null) {
                 ParseMarble pm = new ParseMarble(marble, s);
+                new ParseThread(pm).start();
                 s.onSubscribe(new TestSubscription(pm));
             }
         }).withRequestSubscription(payload -> s -> {
@@ -103,14 +111,47 @@ public class JServerDriver {
                 s.onSubscribe(new TestSubscription(pm));
             }
         }).withRequestChannel(payloadPublisher -> s -> { // design flaw
-            /*System.out.println("Channel");
-            TestSubscriber<Payload> sub = new TestSubscriber<>();
-            channelSubscribers.put(channelSubCount + "", sub);
-            channelSubCount++;
-            s.onSubscribe(sub);*/
+            try {
+                System.out.println("Channel");
+                TestSubscriber<Payload> sub = new TestSubscriber<>();
+                payloadPublisher.subscribe(sub);
+                // want to get equivalent of "initial payload"
+                //sub.request(1); // first request of server is implicit, so don't need to call request(1) here
+                sub.awaitAtLeast(1, 1000, TimeUnit.MILLISECONDS);
+                Tuple<String, String> initpayload = new Tuple<>(sub.getElement(0)._1, sub.getElement(0)._2);
+                System.out.println(initpayload.getK() + " " + initpayload.getV());
+                ParseMarble pm = new ParseMarble(s);
+                s.onSubscribe(new TestSubscription(pm));
+                // need special functionality for parseMarble to incrementally build marble
+                ParseChannel pc = new ParseChannel(requestChannelCommands.get(initpayload), sub, pm);
+                new ParseChannelThread(pc).start();
+            } catch (Exception e) {
+                System.out.println("Interrupted");
+            }
         }).build();
     }
 
+    /**
+     * This handles the creation of a channel handler, it basically groups together all the lines of the channel
+     * script and put it in a map for later access
+     * @param args
+     * @param reader
+     * @throws IOException
+     */
+    private void handle_channel(String[] args, BufferedReader reader) throws IOException {
+        Tuple<String, String> initialPayload = new Tuple<>(args[1], args[2]);
+        String line = reader.readLine();
+        List<String> commands = new ArrayList<>();
+        while (!line.equals("}")) {
+            commands.add(line);
+            line = reader.readLine();
+        }
+        requestChannelCommands.put(initialPayload, commands);
+    }
+
+    /**
+     * A trivial subscription used to interface with the ParseMarble object
+     */
     private class TestSubscription implements Subscription {
         private ParseMarble pm;
         public TestSubscription(ParseMarble pm) {
@@ -124,7 +165,7 @@ public class JServerDriver {
 
         @Override
         public void request(long n) {
-            pm.parse(n);
+            pm.request(n);
         }
     }
 

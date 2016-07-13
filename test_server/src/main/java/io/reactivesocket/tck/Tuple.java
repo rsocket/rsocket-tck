@@ -47,4 +47,9 @@ public class Tuple<K, V> {
     public int hashCode() {
         return new HashCodeBuilder().append(this.getK().hashCode()).append(this.getV().hashCode()).toHashCode();
     }
+
+    @Override
+    public String toString() {
+        return getV().toString() + "," + getK().toString();
+    }
 }

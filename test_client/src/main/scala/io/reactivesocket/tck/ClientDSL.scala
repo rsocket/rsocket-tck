@@ -2,9 +2,6 @@ package io.reactivesocket.tck
 
 import java.io.{File, PrintWriter}
 
-/**
-  * Created by mjzhu on 7/5/16.
-  */
 class ClientDSL {
 
   val writer: PrintWriter = new PrintWriter(new File(this.getClass.getSimpleName + ".txt"))
@@ -46,6 +43,34 @@ class ClientDSL {
 
   def nametest(name: String) : Unit = writer.write("name%%" + name + "\n")
 
+
+  trait ChannelHandler {
+    def using(data: String, meta: String) : ChannelHandler
+    def asFollows(f: () => Unit): Unit
+  }
+
+  object requestChannel extends ChannelHandler {
+    override def using(data: String, meta: String) : ChannelHandler = {
+      writer.write("channel%%" + data + "%%" + meta + "%%")
+      return this
+    }
+    override def asFollows(f: () => Unit) = {
+      writer.write("{\n")
+      f()
+      writer.write("}\n")
+    }
+  }
+
+  def channelSubscriber() : DSLTestSubscriber = {
+    // we create a trivial subscriber because we don't need a "real" one, because we will already pass in a test
+    // subscriber in the driver, as one should have already been created to get the initial payload from the client
+    return new DSLTestSubscriber(writer, "", "", "");
+  }
+
+  def respond(marble : String) : Unit = {
+    writer.write("respond%%" + marble + "\n")
+  }
+
 }
 
 object clienttest extends ClientDSL {
@@ -54,15 +79,29 @@ object clienttest extends ClientDSL {
     begintest(test1)
     begintest(test2)
     begintest(test3)
+    //begintest(test4)
     end
   }
 
+  // example for testing channel
   def test0() : Unit = {
-    val s1 = requestChannel(Map("x" -> ("hello", "goodbye")), Map(
-      ("a", "b") -> "--x--x--|",
-      ("c", "d") -> "----#"
-    )) // sets up the channel handler,
-
+    requestChannel using("a", "b") asFollows(() => {
+      respond("-a-")
+      val s1 = channelSubscriber
+      s1 request 1
+      respond("-b-c-d-e-f-")
+      s1 awaitAtLeast(1, 2000)
+      s1 assertReceivedAtLeast 1
+      s1 assertReceived List(("x", "x"))
+      s1 request 2
+      respond("-g-h-i-j-k-")
+      s1 awaitAtLeast(4, 2000)
+      s1 request 4
+      s1 awaitAtLeast(7, 1000)
+      respond("|")
+      s1 awaitTerminal()
+      s1 assertCompleted()
+    })
   }
 
   def test1() : Unit = {
@@ -91,5 +130,24 @@ object clienttest extends ClientDSL {
     s1 awaitTerminal()
     s1 assertError()
     s1 assertNotCompleted()
+  }
+
+  // example for testing stream
+  def test4() : Unit = {
+    nametest("test4")
+    val s1 = requestStream("a", "b")
+    s1 request 3
+    val s2 = requestStream("c", "d")
+    s1 awaitAtLeast(3, 2000)
+    s2 request 1
+    s1 assertReceived(List(("a", "b"), ("c", "d"), ("e", "f")))
+    s1 request 3
+    s1 awaitTerminal()
+    s1 assertCompleted()
+    s1 assertNoErrors()
+    s1 assertReceivedCount 6
+    s2 cancel()
+    s2 assertCanceled()
+    s2 assertNoErrors()
   }
 }

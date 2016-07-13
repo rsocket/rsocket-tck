@@ -446,7 +446,6 @@ public class TestSubscriber<T> implements Subscriber<T>, Subscription, Disposabl
         return done.await(time, unit);
     }
 
-    // TODO : change this so it supports awaitAtLeast (right now still functions as awaitAtMost)
     public final boolean awaitAtLeast(long n, long time, TimeUnit unit) throws InterruptedException {
         numOnNext.await(time, unit);
         while (values.size() < n) {

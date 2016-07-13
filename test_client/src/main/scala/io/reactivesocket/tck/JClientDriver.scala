@@ -7,6 +7,8 @@ import scala.collection.mutable
 import io.reactivesocket.{DefaultReactiveSocket, Payload, ReactiveSocket}
 import org.reactivestreams.{Publisher, Subscriber, Subscription}
 
+import scala.collection.JavaConverters._
+
 class ClientDriver(client: ReactiveSocket, path: String) {
 
   val ANSI_RESET: String = "\u001B[0m"
@@ -51,8 +53,10 @@ class ClientDriver(client: ReactiveSocket, path: String) {
   }
 
   def parse(test: List[String]) : Boolean = {
-    var id = "";
-    for (line <- test) {
+    var id : List[String] = List()
+    val iter = test.iterator
+    while (iter.hasNext) {
+      val line = iter.next
       val args : Array[String] = line.split("%%")
 
       // the over arching cases, each case will have their own sub cases
@@ -61,17 +65,15 @@ class ClientDriver(client: ReactiveSocket, path: String) {
         // right away. The publisher is pretty trivial, and we'd only want to store the subscriber
         case "subscribe" => {
           handle_subscribe(args)
-          id = args(2)
+          id = id :+ args(2)
         }
+
+        case "channel" => handle_channel(args, iter)
 
         case "await" => {
           args(1) match {
-            case "terminal" => {
-              handle_await_terminal(args)
-            }
-            case "atMost" => {
-              handle_await_at_most(args)
-            }
+            case "terminal" => handle_await_terminal(args)
+            case "atLeast" => println("awaiting"); handle_await_at_least(args)
             case "onNext" => {
               // we probably don't need this
             }
@@ -81,63 +83,36 @@ class ClientDriver(client: ReactiveSocket, path: String) {
         // assert will have an insane number of cases
         case "assert" => {
           args(1) match {
-            case "no_error" => {
-              handle_no_error(args)
-            }
-            case "error" => {
-              handle_error(args)
-            }
-            case "received" => {
-              handle_received(args)
-            }
-            case "received_n" => {
-              handle_received_n(args)
-            }
-            case "received_at_least" => {
-              handle_received_at_least(args)
-            }
-            case "completed" => {
-              handle_completed(args)
-            }
-            case "no_completed" => {
-              handle_no_completed(args)
-            }
-            case "no_terminal" => {
-
-            }
-            case "subscribed" => {
-
-            }
-            case "no_subscribed" => {
-
-            }
-            case "canceled" => {
-              handle_canceled(args)
-            }
+            case "no_error" => handle_no_error(args)
+            case "error" => handle_error(args)
+            case "received" => handle_received(args)
+            case "received_n" => handle_received_n(args)
+            case "received_at_least" => handle_received_at_least(args)
+            case "completed" => handle_completed(args)
+            case "no_completed" => handle_no_completed(args)
+            case "no_terminal" => ???
+            case "subscribed" => ???
+            case "no_subscribed" => ???
+            case "canceled" => handle_canceled(args)
           }
         }
 
         // this tells the subscriber to request some number, and then canceled the subscription
-        case "take" => {
-          handle_take(args)
-        }
-
-        case "request" => {
-          handle_request(args)
-        }
-
-        case "cancel" => {
-          handle_cancel(args)
-        }
-
-        case "EOF" => {
-
-        }
+        case "take" => handle_take(args)
+        case "request" => handle_request(args)
+        case "cancel" => handle_cancel(args)
+        case "EOF" =>
       }
     }
 
-    if (payloadSubscribers.get(id).isDefined) return payloadSubscribers.get(id).get.hasPassed
-    else return fnfSubscribers.get(id).get.hasPassed
+    // makes sure that each subscriber passed
+    return id.foldRight(true) {(a, b) =>
+      var x = false;
+      if (payloadSubscribers.get(a).isDefined) x = payloadSubscribers.get(a).get.hasPassed
+      else x = fnfSubscribers.get(a).get.hasPassed
+      x && b
+    }
+
   }
 
 
@@ -171,20 +146,53 @@ class ClientDriver(client: ReactiveSocket, path: String) {
         val pub : Publisher[Void] = client.fireAndForget(new PayloadImpl(args(3), args(4)))
         pub.subscribe(sub)
       }
-      case "channel" => {
+      /*case "channel" => {
         val sub : TestSubscriber[Payload] = new TestSubscriber[Payload](0 : Long);
         payloadSubscribers.put(args(2), sub)
         idToType.put(args(2), args(1)) // keeps track of the type of subscriber this id is referring to
-
 
         val pub : Publisher[Payload] = client.requestChannel(new Publisher[Payload] {
             override def subscribe(s: Subscriber[_ >: Payload]): Unit = {
               s.onSubscribe(new TestSubscription(new ParseMarble(args(3), s)))
             }
           })
-        pub.subscribe(sub) // this code is very eager
-      }
+        pub.subscribe(sub)
+      }*/
     }
+  }
+
+  private def handle_channel(args: Array[String], iter: Iterator[String]) : Unit = {
+    var commands: List[String] = List()
+    var line = iter.next()
+    // this gets the commands that will run this channel
+    while (!line.equals("}")) {
+      commands = commands :+ line
+      line = iter.next()
+    }
+    // this is the initial payload
+    val initpayload = new PayloadImpl(args(1), args(2))
+
+    // this is the subscriber that will request data from the SERVER, like all the other test subscribers here
+    // the client will do asserts on this subscriber
+    val testsub : TestSubscriber[Payload] = new TestSubscriber[Payload](1 : Long)
+    var superpc : ParseChannel = null
+    val c = new CountDownLatch(1)
+    // this creates the publisher that the SERVER will subscribe to with their subscriber
+    // We want to give the subscriber a subscription that the CLIENT defines, that will send data to the server
+    val pub: Publisher[Payload] = client.requestChannel(new Publisher[Payload] {
+      override def subscribe(s: Subscriber[_ >: Payload]): Unit = {
+        val pm : ParseMarble = new ParseMarble(s)
+        val ts : TestSubscription = new TestSubscription(pm, initpayload, s)
+        s.onSubscribe(ts)
+        val pc : ParseChannel = new ParseChannel(commands.asJava, testsub, pm)
+        val pct = new ParseChannelThread(pc)
+        pct.start
+        pct.join
+        c.countDown()
+      }
+    })
+    pub.subscribe(testsub)
+    c.await()
   }
 
   private def handle_await_terminal(args : Array[String]) : Unit = {
@@ -204,10 +212,10 @@ class ClientDriver(client: ReactiveSocket, path: String) {
     }
   }
 
-  private def handle_await_at_most(args: Array[String]) : Unit = {
+  private def handle_await_at_least(args: Array[String]) : Unit = {
     val id = args(2)
     val sub = payloadSubscribers.get(id).get
-    sub.awaitAtMost(args(3).toLong, args(4).toLong, TimeUnit.MILLISECONDS)
+    sub.awaitAtLeast(args(3).toLong, args(4).toLong, TimeUnit.MILLISECONDS)
   }
 
   private def handle_no_error(args: Array[String]) : Unit = {
@@ -292,7 +300,8 @@ class ClientDriver(client: ReactiveSocket, path: String) {
       val temp = values(0).split(",")
       sub.assertValue((temp(0), temp(1)))
     } else if (values.length > 1) {
-      // TODO: probably will have to modify testsubscriber.java
+      val list: Array[(String, String)] = values.map(a => a.split(",")).map(b => (b(0), b(1)))
+      sub.assertValues(list)
     }
   }
 
@@ -326,7 +335,6 @@ class ClientDriver(client: ReactiveSocket, path: String) {
   private class TestThread(test: List[String]) extends Runnable {
     private val t : Thread = new Thread(this)
     override def run() : Unit = {
-      if (t.isInterrupted) return;
       var name : String = ""
       if (test.head.startsWith("name")) {
         name = test.head.split("%%")(1)
@@ -347,13 +355,22 @@ class ClientDriver(client: ReactiveSocket, path: String) {
 
 }
 
-private class TestSubscription(var pm: ParseMarble) extends Subscription {
+private class TestSubscription(pm: ParseMarble, initpayload: Payload, sub: Subscriber[_ >: Payload]) extends Subscription {
+  var firstRequest = true
+
   def cancel {
     pm.cancel
   }
 
   def request(n: Long) {
-    pm.parse(n)
+    var m = n;
+    if (firstRequest) {
+      sub.onNext(initpayload)
+      firstRequest = false
+      m = m - 1
+    }
+    pm.request(m)
   }
 }
+
 
