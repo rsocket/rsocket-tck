@@ -4,7 +4,7 @@ package io.reactivesocket.tck
 object main {
 
   def main(args: Array[String]) {
-    Tests.runTests(this)
+    //Tests.runTests(this)
   }
 
   @Test

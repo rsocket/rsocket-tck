@@ -4,7 +4,7 @@ import java.io.{File, PrintWriter}
 
 class ClientDSL {
 
-  val writer: PrintWriter = new PrintWriter(new File(this.getClass.getSimpleName + ".txt"))
+  var writer: PrintWriter = new PrintWriter(new File(this.getClass.getSimpleName + ".txt"))
 
   def requestResponse(data: String, metadata: String) : DSLTestSubscriber = {
     return new DSLTestSubscriber(writer, data, metadata, "rr");
@@ -74,16 +74,13 @@ class ClientDSL {
 
 object clienttest extends ClientDSL {
   def main(args: Array[String]) {
-    Tests.runTests(this)
-    end()
+    Tests.runTests(this, this.writer)
   }
 
   // example for testing channel
   @Test
-  def test0() : Unit = {
-    begintest()
-    nametest("channel test")
-    requestChannel using("a", "b") asFollows(() => {
+  def channel_test() : Unit = {
+    requestChannel using("a", "b") asFollows(() => { // onChannelRequest
       respond("-a-")
       val s1 = channelSubscriber
       s1 request 1
@@ -103,9 +100,7 @@ object clienttest extends ClientDSL {
   }
 
   @Test
-  def test1() : Unit = {
-    begintest()
-    nametest("test1")
+  def requestresponse_pass() : Unit = {
     val s1 = requestResponse("a", "b")
     s1 request 1
     s1 awaitTerminal()
@@ -113,9 +108,7 @@ object clienttest extends ClientDSL {
   }
 
   @Test
-  def test2() : Unit = {
-    begintest()
-    nametest("test2")
+  def requestresponse_fail() : Unit = {
     val s1 = requestResponse("c", "d")
     s1 request 1
     s1 awaitTerminal()
@@ -126,9 +119,7 @@ object clienttest extends ClientDSL {
   }
 
   @Test
-  def test3() : Unit = {
-    begintest()
-    nametest("test3")
+  def requestresponse_pass2() : Unit = {
     val s1 = requestResponse("e", "f")
     s1 request 1
     s1 awaitTerminal()
@@ -138,9 +129,7 @@ object clienttest extends ClientDSL {
 
   // example for testing stream
   @Test
-  def test4() : Unit = {
-    begintest()
-    nametest("test4")
+  def stream_test() : Unit = {
     val s1 = requestStream("a", "b")
     s1 request 3
     val s2 = requestStream("c", "d")

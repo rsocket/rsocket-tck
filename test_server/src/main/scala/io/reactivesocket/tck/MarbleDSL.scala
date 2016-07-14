@@ -11,7 +11,7 @@ class MarbleDSL {
   import org.json4s.native.Serialization
   implicit val formats = Serialization.formats(NoTypeHints)
 
-  val writer: PrintWriter = new PrintWriter(new File(this.getClass.getSimpleName + ".txt"))
+  var writer: PrintWriter = new PrintWriter(new File(this.getClass.getSimpleName + ".txt"))
 
   trait Handler {
     def handle(data: String, meta: String) : Handler
@@ -181,19 +181,37 @@ class MarbleDSL {
 
 object servertest extends MarbleDSL {
   def main(args: Array[String]) {
+    Tests.runTests(this, this.writer)
+  }
+
+  @Test
+  def handle_requestresponse() : Unit = {
     requestResponse handle("a", "b") using(Map("x" -> ("hello", "goodbye")), pause(3), emit('x'),
       pause(4), pause(5), complete)
+
     requestResponse handle("c", "d") using(Map("x" -> ("ding", "dong")), pause(10), emit('x'),
       pause(10), complete)
-    requestResponse handle("e", "f") using(pause(10), error)
-    requestResponse handle("g", "h") using("-")
 
+    requestResponse handle("e", "f") using(pause(10), error)
+
+    requestResponse handle("g", "h") using("-")
+  }
+
+  @Test
+  def handle_requeststream() : Unit = {
     requestStream handle("a", "b") using(Map("a" -> ("a", "b"), "b" -> ("c", "d"), "c" -> ("e", "f")),
       "---a-----b-----c-----d--e--f---|")
     requestStream handle("c", "e") using(Map("a" -> ("a", "b"), "b" -> ("c", "d"), "c" -> ("e", "f")),
       "---a-----b-----c-----d--e--f---|")
-    requestSubscription handle("a", "b") using("abcdefghijklmnop")
+  }
 
+  @Test
+  def handle_requestsubscription() : Unit = {
+    requestSubscription handle("a", "b") using("abcdefghijklmnop")
+  }
+
+  @Test
+  def handle_requestchannel() : Unit = {
     requestChannel handle("a", "b") asFollows(() => {
       val s1 = channelSubscriber()
       respond("---x---")
@@ -211,17 +229,6 @@ object servertest extends MarbleDSL {
       s1 awaitTerminal()
       s1 assertCompleted()
     })
-    end
-
-    /*requestChannel handle("a") using (
-      val s1 = subscriber   ..
-          .. assert   ..
-      response ("---x---")
-        s1 request 1
-      response("abc")
-        s1 await 10
-
-      )
-    requestChannel handle("b") using ()*/
   }
+
 }
