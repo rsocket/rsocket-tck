@@ -36,9 +36,8 @@ class ClientDSL {
     writer.close()
   }
 
-  def begintest(test : () => Unit) : Unit = {
+  def begintest() : Unit = {
     writer.write("!\n")
-    test()
   }
 
   def nametest(name: String) : Unit = writer.write("name%%" + name + "\n")
@@ -75,16 +74,15 @@ class ClientDSL {
 
 object clienttest extends ClientDSL {
   def main(args: Array[String]) {
-    //begintest(test0)
-    begintest(test1)
-    begintest(test2)
-    begintest(test3)
-    //begintest(test4)
-    end
+    Tests.runTests(this)
+    end()
   }
 
   // example for testing channel
+  @Test
   def test0() : Unit = {
+    begintest()
+    nametest("channel test")
     requestChannel using("a", "b") asFollows(() => {
       respond("-a-")
       val s1 = channelSubscriber
@@ -104,7 +102,9 @@ object clienttest extends ClientDSL {
     })
   }
 
+  @Test
   def test1() : Unit = {
+    begintest()
     nametest("test1")
     val s1 = requestResponse("a", "b")
     s1 request 1
@@ -112,7 +112,9 @@ object clienttest extends ClientDSL {
     s1 assertCompleted()
   }
 
+  @Test
   def test2() : Unit = {
+    begintest()
     nametest("test2")
     val s1 = requestResponse("c", "d")
     s1 request 1
@@ -123,7 +125,9 @@ object clienttest extends ClientDSL {
     s1 assertNoErrors()
   }
 
+  @Test
   def test3() : Unit = {
+    begintest()
     nametest("test3")
     val s1 = requestResponse("e", "f")
     s1 request 1
@@ -133,7 +137,9 @@ object clienttest extends ClientDSL {
   }
 
   // example for testing stream
+  @Test
   def test4() : Unit = {
+    begintest()
     nametest("test4")
     val s1 = requestStream("a", "b")
     s1 request 3
