@@ -84,6 +84,11 @@ public class TestSubscriber<T> implements Subscriber<T>, Subscription, Disposabl
 
     private boolean isComplete = false;
 
+    /**
+     * The echo subscription, if exists
+     */
+    private EchoSubscription echosub;
+    private boolean isEcho = false;
 
     private boolean checkSubscriptionOnce;
 
@@ -205,6 +210,10 @@ public class TestSubscriber<T> implements Subscriber<T>, Subscription, Disposabl
         Tuple2<String, String> tup = new Tuple2<>(PayloadImpl.byteToString(p.getData()),
                 PayloadImpl.byteToString(p.getMetadata()));
         System.out.println("ON NEXT GOT : "  + tup._1 + " " + tup._2);
+        if (isEcho) {
+            echosub.add(tup);
+            return;
+        }
         if (!checkSubscriptionOnce) {
             checkSubscriptionOnce = true;
             if (subscription.get() == null) {
@@ -291,6 +300,11 @@ public class TestSubscriber<T> implements Subscriber<T>, Subscription, Disposabl
                 }
             }
         }
+    }
+
+    public final void setEcho(EchoSubscription echosub) {
+        isEcho = true;
+        this.echosub = echosub;
     }
 
     // there might be a race condition with take, so this behavior is defined as: either wait until we have received n

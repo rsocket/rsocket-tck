@@ -68,33 +68,39 @@ class MarbleDSL {
   object requestResponse extends HandlerImpl {
     override def handle(data: String, meta: String) : Handler = {
       writer.write("rr%%" + data + "%%" + meta + "%%")
-      return this
+      this
     }
   }
 
   object requestStream extends HandlerImpl {
     override def handle(data: String, meta: String) : Handler = {
       writer.write("rs%%" + data + "%%" + meta + "%%")
-      return this
+      this
     }
   }
 
   object requestSubscription extends HandlerImpl {
     override def handle(data: String, meta: String) : Handler = {
       writer.write("sub%%" + data + "%%" + meta + "%%")
-      return this
+      this
     }
   }
 
   object requestChannel extends ChannelHandler {
     override def handle(data: String, meta: String) : ChannelHandler = {
       writer.write("channel%%" + data + "%%" + meta + "%%")
-      return this
+      this
     }
     override def asFollows(f: () => Unit) = {
       writer.write("{\n")
       f()
       writer.write("}\n")
+    }
+  }
+
+  object requestEchoChannel {
+    def handle(data: String, meta: String) : Unit = {
+      writer.write("echochannel%%" + data + "%%" + meta + "\n")
     }
   }
 
@@ -112,38 +118,38 @@ class MarbleDSL {
       for (i <- 0 until n) {
         s += "-"
       }
-      return this
+      this
     }
-    override def str : String = return s
+    override def str : String = s
   }
 
   object complete extends Marble {
     def apply : Marble = return this
-    override def str : String = return "|"
+    override def str : String = "|"
   }
 
   object error extends Marble {
     def apply : Marble = return this
-    override def str : String = return "#"
+    override def str : String = "#"
   }
 
   object emit extends Marble {
     var ch : Queue[Char] = Queue.empty
     def apply(c: Char) : Marble = {
       ch = ch.enqueue(c)
-      return this
+      this
     }
     override def str : String = {
       val temp : (Char, Queue[Char]) = ch.dequeue
       val toReturn : Char = temp._1
       ch = temp._2
-      return toReturn.toString
+      toReturn.toString
     }
   }
 
   object sub extends Marble {
     def apply : Marble = return this
-    override def str : String = return "^"
+    override def str : String = "^"
   }
 
   object group extends Marble {
@@ -154,9 +160,9 @@ class MarbleDSL {
         s += m.str
       }
       s += ")"
-      return this
+      this
     }
-    override def str : String = return s
+    override def str : String = s
   }
 
 
@@ -169,7 +175,7 @@ class MarbleDSL {
   def channelSubscriber() : DSLTestSubscriber = {
     // we create a trivial subscriber because we don't need a "real" one, because we will already pass in a test
     // subscriber in the driver, as one should have already been created to get the initial payload from the client
-    return new DSLTestSubscriber(writer, "", "", "");
+    new DSLTestSubscriber(writer, "", "", "");
   }
 
   def respond(marble : String) : Unit = {
@@ -182,6 +188,12 @@ class MarbleDSL {
 object servertest extends MarbleDSL {
   def main(args: Array[String]) {
     Tests.runTests(this, this.writer)
+  }
+
+  @Test
+  def handleEcho() : Unit = {
+    // not really a test... more like set up a behavior
+    requestEchoChannel handle("e", "f")
   }
 
   @Test

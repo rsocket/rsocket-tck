@@ -17,9 +17,6 @@ import static java.net.InetSocketAddress.createUnresolved;
 public class JavaTCPClient {
 
     public static void main(String[] args) throws MalformedURLException, URISyntaxException {
-
-
-
         // we pass in our reactive socket here to the test suite
         String file = "clienttest$.txt";
         if (args.length > 0) {

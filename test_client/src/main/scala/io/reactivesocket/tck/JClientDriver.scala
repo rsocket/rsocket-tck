@@ -63,6 +63,7 @@ class ClientDriver(path: String) {
         }
 
         case "channel" => handleChannel(args, iter)
+        case "echochannel" => handleEchoChannel(args)
 
         case "await" => {
           args(1) match {
@@ -174,6 +175,21 @@ class ClientDriver(path: String) {
         pct.join
       }
     })
+    pub.subscribe(testsub)
+  }
+
+  private def handleEchoChannel(args: Array[String]) : Unit = {
+    val initpayload = new PayloadImpl(args(1), args(2))
+    val testsub : TestSubscriber[Payload] = new TestSubscriber[Payload](1 : Long)
+    val client = JavaTCPClient.createClient(); // we create a fresh client to use
+    val pub: Publisher[Payload] = client.requestChannel(new Publisher[Payload] {
+        override def subscribe(s: Subscriber[_ >: Payload]): Unit = {
+          val echoSub = new EchoSubscription(s)
+          s.onSubscribe(echoSub)
+          testsub.setEcho(echoSub)
+          s.onNext(initpayload)
+        }
+      })
     pub.subscribe(testsub)
   }
 

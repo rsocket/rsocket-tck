@@ -48,6 +48,10 @@ class ClientDSL {
     }
   }
 
+  object createEchoChannel {
+    def using(data: String, meta: String) : Unit = writer.write("echochannel%%" + data + "%%" + meta + "\n")
+  }
+
   def channelSubscriber() : DSLTestSubscriber = {
     // we create a trivial subscriber because we don't need a "real" one, because we will already pass in a test
     // subscriber in the driver, as one should have already been created to get the initial payload from the client
@@ -65,8 +69,28 @@ object clienttest extends ClientDSL {
     Tests.runTests(this, this.writer)
   }
 
-  // example for testing channel
   @Test
+  def echo() : Unit = {
+    createEchoChannel using("x", "y")
+  }
+
+  /*@Test
+  def echoTest() : Unit = {
+    requestChannel using("e", "f") asFollows(() => {
+      respond("a")
+      val cs = channelSubscriber()
+      cs request(1)
+      cs awaitAtLeast (1, 1000)
+      cs request(10)
+      respond("abcdefghijkmlnopqrstuvwxyz")
+      cs awaitAtLeast (10, 1000)
+      cs request(20)
+
+    })
+  }*/
+
+  // example for testing channel
+  /*@Test
   def channelTest() : Unit = {
     requestChannel using("a", "b") asFollows(() => { // onChannelRequest
       respond("-a-")
@@ -175,6 +199,6 @@ object clienttest extends ClientDSL {
     s2 cancel()
     s2 assertCanceled()
     s2 assertNoErrors()
-  }
+  }*/
 
 }
