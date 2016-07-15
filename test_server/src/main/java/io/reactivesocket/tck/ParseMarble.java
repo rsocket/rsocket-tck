@@ -24,6 +24,7 @@ public class ParseMarble {
     private int marbleIndex = 0;
     private CountDownLatch parseLatch;
     private CountDownLatch sendLatch;
+    private UUID id = UUID.randomUUID();
 
     public ParseMarble(String marble, Subscriber<? super Payload> s) {
         this.s = s;
@@ -60,8 +61,11 @@ public class ParseMarble {
 
     public synchronized void request(long n) {
         System.out.println("requested" + n);
+        System.out.println(this.id);
         numRequested += n;
-        if (marble.length() > marbleIndex) sendLatch.countDown();
+        if (marble.length() > marbleIndex) {
+            sendLatch.countDown();
+        }
     }
 
     // this parses the actual marble diagram and acts out the behavior
@@ -74,8 +78,10 @@ public class ParseMarble {
             boolean grouped = false;
             while (true) {
                 if (marbleIndex >= marble.length()) {
-                    if (parseLatch.getCount() == 0) parseLatch = new CountDownLatch(1);
-                    parseLatch.await();
+                    synchronized (parseLatch) {
+                        if (parseLatch.getCount() == 0) parseLatch = new CountDownLatch(1);
+                        parseLatch.await();
+                    }
                     parseLatch = new CountDownLatch(1);
                 }
                 char c = marble.charAt(marbleIndex);
@@ -105,8 +111,10 @@ public class ParseMarble {
                         break;
                     default:
                         if (numSent >= numRequested) {
-                            if (sendLatch.getCount() == 0) sendLatch = new CountDownLatch(1);
-                            sendLatch.await();
+                            synchronized (sendLatch) {
+                                if (sendLatch.getCount() == 0) sendLatch = new CountDownLatch(1);
+                                sendLatch.await();
+                            }
                             sendLatch = new CountDownLatch(1);
                         }
                         if (argMap != null) {

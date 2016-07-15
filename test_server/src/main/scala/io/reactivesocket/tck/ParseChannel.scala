@@ -15,6 +15,10 @@ import scala.collection.JavaConversions._
   */
 class ParseChannel(commands: List[String], sub: TestSubscriber[Payload], parseMarble: ParseMarble) {
 
+  val ANSI_RESET: String = "\u001B[0m"
+  val ANSI_RED: String = "\u001B[31m"
+  val ANSI_GREEN: String = "\u001B[32m"
+
   // spawns a thread that runs the parse method
   val parseThread = new ParseThread(parseMarble);
   parseThread.start()
@@ -31,6 +35,7 @@ class ParseChannel(commands: List[String], sub: TestSubscriber[Payload], parseMa
           args(1) match {
             case "terminal" => sub.awaitTerminalEvent
             case "atLeast" => println("await");sub.awaitAtLeast(args(3).toLong, args(4).toLong, TimeUnit.MILLISECONDS)
+            case "no_events" => sub.awaitNoEvents(args(3).toLong)
           }
         }
 
@@ -54,6 +59,8 @@ class ParseChannel(commands: List[String], sub: TestSubscriber[Payload], parseMa
 
       }
     }
+    if (sub.hasPassed) println(ANSI_GREEN + "CHANNEL PASSED" + ANSI_RESET)
+    else println(ANSI_RED + "CHANNEL FAILED" + ANSI_RESET)
   }
 
   private def handle_respond(args: Array[String]) = {

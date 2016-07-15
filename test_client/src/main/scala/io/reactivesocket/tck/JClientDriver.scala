@@ -9,7 +9,7 @@ import org.reactivestreams.{Publisher, Subscriber, Subscription}
 
 import scala.collection.JavaConverters._
 
-class ClientDriver(client: ReactiveSocket, path: String) {
+class ClientDriver(path: String) {
 
   val ANSI_RESET: String = "\u001B[0m"
   val ANSI_BLACK: String = "\u001B[30m"
@@ -52,7 +52,7 @@ class ClientDriver(client: ReactiveSocket, path: String) {
     }
   }
 
-  def parse(test: List[String]) : Boolean = {
+  def parse(test: List[String]) : Option[Boolean] = {
     var id : List[String] = List()
     val iter = test.iterator
     while (iter.hasNext) {
@@ -74,9 +74,7 @@ class ClientDriver(client: ReactiveSocket, path: String) {
           args(1) match {
             case "terminal" => handle_await_terminal(args)
             case "atLeast" => println("awaiting"); handle_await_at_least(args)
-            case "onNext" => {
-              // we probably don't need this
-            }
+            case "no_events" => handle_await_no_events(args)
           }
         }
 
@@ -90,9 +88,6 @@ class ClientDriver(client: ReactiveSocket, path: String) {
             case "received_at_least" => handle_received_at_least(args)
             case "completed" => handle_completed(args)
             case "no_completed" => handle_no_completed(args)
-            case "no_terminal" => ???
-            case "subscribed" => ???
-            case "no_subscribed" => ???
             case "canceled" => handle_canceled(args)
           }
         }
@@ -106,12 +101,13 @@ class ClientDriver(client: ReactiveSocket, path: String) {
     }
 
     // makes sure that each subscriber passed
-    return id.foldRight(true) {(a, b) =>
+    if (id.length > 0) return Some(id.foldRight(true) {(a, b) =>
       var x = false;
       if (payloadSubscribers.get(a).isDefined) x = payloadSubscribers.get(a).get.hasPassed
       else x = fnfSubscribers.get(a).get.hasPassed
       x && b
-    }
+    })
+    else return None
 
   }
 
@@ -122,6 +118,7 @@ class ClientDriver(client: ReactiveSocket, path: String) {
         val sub : TestSubscriber[Payload] = new TestSubscriber[Payload](0 : Long)
         payloadSubscribers.put(args(2), sub)
         idToType.put(args(2), args(1)) // keeps track of the type of subscriber this id is referring to
+        val client = JavaTCPClient.createClient(); // create a fresh client
         val pub : Publisher[Payload] = client.requestResponse(new PayloadImpl(args(3), args(4)))
         pub.subscribe(sub) // this code is very eager
       }
@@ -129,13 +126,16 @@ class ClientDriver(client: ReactiveSocket, path: String) {
         val sub : TestSubscriber[Payload] = new TestSubscriber[Payload](0 : Long)
         payloadSubscribers.put(args(2), sub)
         idToType.put(args(2), args(1)) // keeps track of the type of subscriber this id is referring to
+        val client = JavaTCPClient.createClient();
         val pub : Publisher[Payload] = client.requestStream(new PayloadImpl(args(3), args(4)))
         pub.subscribe(sub) // this code is very eager
+        println("subscribed stream")
       }
       case "sub" => {
         val sub : TestSubscriber[Payload] = new TestSubscriber[Payload](0 : Long)
         payloadSubscribers.put(args(2), sub)
         idToType.put(args(2), args(1)) // keeps track of the type of subscriber this id is referring to
+        val client = JavaTCPClient.createClient();
         val pub : Publisher[Payload] = client.requestSubscription(new PayloadImpl(args(3), args(4)))
         pub.subscribe(sub) // this code is very eager
       }
@@ -143,21 +143,10 @@ class ClientDriver(client: ReactiveSocket, path: String) {
         val sub : TestSubscriber[Void] = new TestSubscriber[Void]
         fnfSubscribers.put(args(2), sub)
         idToType.put(args(2), args(1)) // keeps track of the type of subscriber this id is referring to
+        val client = JavaTCPClient.createClient();
         val pub : Publisher[Void] = client.fireAndForget(new PayloadImpl(args(3), args(4)))
         pub.subscribe(sub)
       }
-      /*case "channel" => {
-        val sub : TestSubscriber[Payload] = new TestSubscriber[Payload](0 : Long);
-        payloadSubscribers.put(args(2), sub)
-        idToType.put(args(2), args(1)) // keeps track of the type of subscriber this id is referring to
-
-        val pub : Publisher[Payload] = client.requestChannel(new Publisher[Payload] {
-            override def subscribe(s: Subscriber[_ >: Payload]): Unit = {
-              s.onSubscribe(new TestSubscription(new ParseMarble(args(3), s)))
-            }
-          })
-        pub.subscribe(sub)
-      }*/
     }
   }
 
@@ -179,6 +168,7 @@ class ClientDriver(client: ReactiveSocket, path: String) {
     val c = new CountDownLatch(1)
     // this creates the publisher that the SERVER will subscribe to with their subscriber
     // We want to give the subscriber a subscription that the CLIENT defines, that will send data to the server
+    val client = JavaTCPClient.createClient(); // we create a fresh client to use
     val pub: Publisher[Payload] = client.requestChannel(new Publisher[Payload] {
       override def subscribe(s: Subscriber[_ >: Payload]): Unit = {
         val pm : ParseMarble = new ParseMarble(s)
@@ -188,11 +178,9 @@ class ClientDriver(client: ReactiveSocket, path: String) {
         val pct = new ParseChannelThread(pc)
         pct.start
         pct.join
-        c.countDown()
       }
     })
     pub.subscribe(testsub)
-    c.await()
   }
 
   private def handle_await_terminal(args : Array[String]) : Unit = {
@@ -216,6 +204,12 @@ class ClientDriver(client: ReactiveSocket, path: String) {
     val id = args(2)
     val sub = payloadSubscribers.get(id).get
     sub.awaitAtLeast(args(3).toLong, args(4).toLong, TimeUnit.MILLISECONDS)
+  }
+
+  private def handle_await_no_events(args: Array[String]) : Unit = {
+    val id = args(2)
+    val sub = payloadSubscribers.get(id).get
+    sub.awaitNoEvents(args(3).toLong)
   }
 
   private def handle_no_error(args: Array[String]) : Unit = {
@@ -339,11 +333,15 @@ class ClientDriver(client: ReactiveSocket, path: String) {
       if (test.head.startsWith("name")) {
         name = test.head.split("%%")(1)
         println("Starting test " + name)
-        if (parse(test.tail)) println(ANSI_GREEN + name + " passed" + ANSI_RESET)
+        val finish = parse(test.tail)
+        if (finish.isEmpty) return
+        if (parse(test.tail).get) println(ANSI_GREEN + name + " passed" + ANSI_RESET)
         else println(ANSI_RED + name + " failed" + ANSI_RESET)
       } else {
         println("Starting test")
-        if (parse(test)) println(ANSI_GREEN + "Test passed" + ANSI_RESET)
+        val finish = parse(test)
+        if (finish.isEmpty) return
+        if (parse(test).get) println(ANSI_GREEN + "Test passed" + ANSI_RESET)
         else println(ANSI_RED + "Test failed" + ANSI_RESET)
       }
 

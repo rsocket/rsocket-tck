@@ -77,7 +77,7 @@ object clienttest extends ClientDSL {
     Tests.runTests(this, this.writer)
   }
 
-  // example for testing channel
+  /*// example for testing channel
   @Test
   def channel_test() : Unit = {
     requestChannel using("a", "b") asFollows(() => { // onChannelRequest
@@ -132,17 +132,61 @@ object clienttest extends ClientDSL {
   def stream_test() : Unit = {
     val s1 = requestStream("a", "b")
     s1 request 3
-    val s2 = requestStream("c", "d")
+    //val s2 = requestStream("c", "d")
     s1 awaitAtLeast(3, 2000)
-    s2 request 1
+   // s2 request 1
     s1 assertReceived(List(("a", "b"), ("c", "d"), ("e", "f")))
     s1 request 3
     s1 awaitTerminal()
     s1 assertCompleted()
     s1 assertNoErrors()
     s1 assertReceivedCount 6
+    //s2 cancel()
+    //s2 assertCanceled()
+    //s2 assertNoErrors()
+  }
+
+  @Test
+  def stream_test2() : Unit = {
+    val s2 = requestStream("c", "d")
+    s2 request 2
+    s2 awaitAtLeast (2, 1000)
     s2 cancel()
     s2 assertCanceled()
     s2 assertNoErrors()
+  }*/
+
+  @Test
+  def channel_test2() : Unit = {
+    requestChannel using("c", "d") asFollows(() => { // onChannelRequest
+      respond("-a-")
+      val s1 = channelSubscriber
+      s1 request 1
+      respond("-b-c-d-e-f-")
+      s1 awaitAtLeast(1, 2000)
+      s1 assertReceivedAtLeast 1
+      s1 assertReceived List(("x", "x"))
+      s1 request 2
+      respond("-g-h-i-j-k-")
+      s1 awaitAtLeast(4, 2000)
+      s1 request 4
+      s1 awaitAtLeast(7, 1000)
+      respond("|")
+      s1 awaitTerminal()
+      s1 assertCompleted()
+      s1 awaitNoAdditionalEvents 100
+    })
   }
+
+  /*@Test
+  def stream_test_fail() : Unit = {
+    val s2 = requestStream("c", "d")
+    s2 request 2
+    s2 awaitNoAdditionalEvents 5000
+    s2 awaitAtLeast (2, 1000)
+    s2 cancel()
+    s2 assertCanceled()
+    s2 assertNoErrors()
+  }*/
+
 }

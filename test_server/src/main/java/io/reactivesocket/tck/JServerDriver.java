@@ -124,7 +124,8 @@ public class JServerDriver {
                 s.onSubscribe(new TestSubscription(pm));
                 // need special functionality for parseMarble to incrementally build marble
                 ParseChannel pc = new ParseChannel(requestChannelCommands.get(initpayload), sub, pm);
-                new ParseChannelThread(pc).start();
+                ParseChannelThread pct = new ParseChannelThread(pc);
+                pct.start();
             } catch (Exception e) {
                 System.out.println("Interrupted");
             }
@@ -165,6 +166,7 @@ public class JServerDriver {
 
         @Override
         public void request(long n) {
+            System.out.println("requsted " + n);
             pm.request(n);
         }
     }

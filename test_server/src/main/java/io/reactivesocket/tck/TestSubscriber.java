@@ -82,6 +82,8 @@ public class TestSubscriber<T> implements Subscriber<T>, Subscription, Disposabl
      */
     private boolean isPassing = true;
 
+    private boolean isComplete = false;
+
 
     private boolean checkSubscriptionOnce;
 
@@ -254,6 +256,7 @@ public class TestSubscriber<T> implements Subscriber<T>, Subscription, Disposabl
 
     @Override
     public void onComplete() {
+        isComplete = true;
         if (!checkSubscriptionOnce) {
             checkSubscriptionOnce = true;
             if (subscription.get() == null) {
@@ -454,6 +457,18 @@ public class TestSubscriber<T> implements Subscriber<T>, Subscription, Disposabl
         pass("got " + values.size() + " out of " + n + " values expected", true);
         numOnNext = new CountDownLatch(Int.MaxValue());
         return true;
+    }
+
+    public final void awaitNoEvents(long time) throws InterruptedException {
+        int numValues = values.size();
+        boolean iscanceled = cancelled;
+        boolean iscompleted = isComplete;
+        Thread.sleep(time);
+        if (numValues == values.size() && iscanceled == cancelled && iscompleted == isComplete) {
+            pass("no additional events", true);
+        } else {
+            fail("received additional events");
+        }
     }
 
     // assertion methods

@@ -79,12 +79,6 @@ class DSLTestSubscriber(writer : PrintWriter, argMap: Map[String, (String, Strin
 
   def assertNotCompleted() : Unit = writer.write("assert%%no_completed%%" + this.id + "\n")
 
-  def assertNotTerminated() : Unit = writer.write("assert%%no_terminal%%" + this.id + "\n")
-
-  def assertSubscribed() : Unit = writer.write("assert%%subscribed%%" + this.id + "\n")
-
-  def assertNotSubscribed() : Unit = writer.write("assert%%no_subscribed%%" + this.id + "\n")
-
   def assertCanceled() : Unit = writer.write("assert%%canceled%%" + this.id + "\n")
 
   // await
@@ -94,6 +88,8 @@ class DSLTestSubscriber(writer : PrintWriter, argMap: Map[String, (String, Strin
   def awaitOnNext() : Unit = writer.write("await%%onNext%%" + this.id + "\n")
 
   def awaitAtLeast(n: Long, t : Long) = writer.write("await%%atLeast%%" + this.id + "%%" + n + "%%" + t + "\n")
+
+  def awaitNoAdditionalEvents(t: Long) = writer.write("await%%no_events%%" + this.id + "%%" + t + "\n")
 
   def take(n: Long) : Unit = writer.write("take%%" + n + "%%" + this.id + "\n")
 

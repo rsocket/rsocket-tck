@@ -201,7 +201,7 @@ object servertest extends MarbleDSL {
   def handle_requeststream() : Unit = {
     requestStream handle("a", "b") using(Map("a" -> ("a", "b"), "b" -> ("c", "d"), "c" -> ("e", "f")),
       "---a-----b-----c-----d--e--f---|")
-    requestStream handle("c", "e") using(Map("a" -> ("a", "b"), "b" -> ("c", "d"), "c" -> ("e", "f")),
+    requestStream handle("c", "d") using(Map("a" -> ("a", "b"), "b" -> ("c", "d"), "c" -> ("e", "f")),
       "---a-----b-----c-----d--e--f---|")
   }
 
@@ -228,6 +228,28 @@ object servertest extends MarbleDSL {
       respond("|")
       s1 awaitTerminal()
       s1 assertCompleted()
+    })
+  }
+
+  @Test
+  def handle_requestchannel2() : Unit = {
+    requestChannel handle("c", "d") asFollows(() => {
+      val s1 = channelSubscriber()
+      respond("---x---")
+      s1 request 1
+      s1 awaitAtLeast(2, 1000)
+      s1 assertReceivedCount 2
+      s1 assertReceived List(("c", "d"), ("a", "a"))
+      s1 request 5
+      s1 awaitAtLeast(7, 1000)
+      respond("a---b---c")
+      s1 request 5
+      s1 awaitAtLeast(12, 1000) // there's an implicit request 1 in the beginning
+      respond("d--e---f-")
+      respond("|")
+      s1 awaitTerminal()
+      s1 assertCompleted()
+      s1 awaitNoAdditionalEvents 1000
     })
   }
 

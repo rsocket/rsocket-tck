@@ -17,16 +17,7 @@ import static java.net.InetSocketAddress.createUnresolved;
 public class JavaTCPClient {
 
     public static void main(String[] args) throws MalformedURLException, URISyntaxException {
-        String target = "tcp://localhost:4567/rs";
-        URI uri = new URI(target);
 
-        DuplexConnection duplexConnection = buildConnection(uri);
-
-        ReactiveSocket client = DefaultReactiveSocket
-                .fromClientConnection(duplexConnection, ConnectionSetupPayload.create("UTF-8", "UTF-8"),
-                        t -> t.printStackTrace());
-
-        client.startAndWait();
 
 
         // we pass in our reactive socket here to the test suite
@@ -35,7 +26,7 @@ public class JavaTCPClient {
             file = args[0];
         }
 
-        ClientDriver jd = new ClientDriver(client, file);
+        ClientDriver jd = new ClientDriver(file);
         jd.runTests();
 
     }
@@ -52,6 +43,25 @@ public class JavaTCPClient {
             throw new UnsupportedOperationException("uri unsupported: " + uri);
         }
         return RxReactiveStreams.toObservable(connection).toBlocking().single();
+    }
+
+    public static ReactiveSocket createClient() {
+        try {
+            String target = "tcp://localhost:4567/rs";
+            URI uri = new URI(target);
+
+            DuplexConnection duplexConnection = buildConnection(uri);
+
+            ReactiveSocket client = DefaultReactiveSocket
+                    .fromClientConnection(duplexConnection, ConnectionSetupPayload.create("UTF-8", "UTF-8"),
+                            t -> t.printStackTrace());
+
+            client.startAndWait();
+            return client;
+        } catch (Exception e) {
+            System.out.println("Something went wrong");
+        }
+        return null;
     }
 
 }
