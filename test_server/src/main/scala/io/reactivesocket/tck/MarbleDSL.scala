@@ -185,7 +185,7 @@ object servertest extends MarbleDSL {
   }
 
   @Test
-  def handle_requestresponse() : Unit = {
+  def handleRequestResponse() : Unit = {
     requestResponse handle("a", "b") using(Map("x" -> ("hello", "goodbye")), pause(3), emit('x'),
       pause(4), pause(5), complete)
 
@@ -198,7 +198,7 @@ object servertest extends MarbleDSL {
   }
 
   @Test
-  def handle_requeststream() : Unit = {
+  def handleRequestStream() : Unit = {
     requestStream handle("a", "b") using(Map("a" -> ("a", "b"), "b" -> ("c", "d"), "c" -> ("e", "f")),
       "---a-----b-----c-----d--e--f---|")
     requestStream handle("c", "d") using(Map("a" -> ("a", "b"), "b" -> ("c", "d"), "c" -> ("e", "f")),
@@ -206,12 +206,12 @@ object servertest extends MarbleDSL {
   }
 
   @Test
-  def handle_requestsubscription() : Unit = {
+  def handleRequestSubscription() : Unit = {
     requestSubscription handle("a", "b") using("abcdefghijklmnop")
   }
 
   @Test
-  def handle_requestchannel() : Unit = {
+  def handleRequestChannel() : Unit = {
     requestChannel handle("a", "b") asFollows(() => {
       val s1 = channelSubscriber()
       respond("---x---")
@@ -232,7 +232,7 @@ object servertest extends MarbleDSL {
   }
 
   @Test
-  def handle_requestchannel2() : Unit = {
+  def handleRequestChannel2() : Unit = {
     requestChannel handle("c", "d") asFollows(() => {
       val s1 = channelSubscriber()
       respond("---x---")

@@ -12,14 +12,8 @@ import scala.collection.JavaConverters._
 class ClientDriver(path: String) {
 
   val ANSI_RESET: String = "\u001B[0m"
-  val ANSI_BLACK: String = "\u001B[30m"
   val ANSI_RED: String = "\u001B[31m"
   val ANSI_GREEN: String = "\u001B[32m"
-  val ANSI_YELLOW: String = "\u001B[33m"
-  val ANSI_BLUE: String = "\u001B[34m"
-  val ANSI_PURPLE: String = "\u001B[35m"
-  val ANSI_CYAN: String = "\u001B[36m"
-  val ANSI_WHITE: String = "\u001B[37m"
 
   private val reader: BufferedReader = new BufferedReader(new FileReader(path))
   private val payloadSubscribers = new mutable.HashMap[String, TestSubscriber[Payload]]
@@ -68,34 +62,34 @@ class ClientDriver(path: String) {
           id = id :+ args(2)
         }
 
-        case "channel" => handle_channel(args, iter)
+        case "channel" => handleChannel(args, iter)
 
         case "await" => {
           args(1) match {
-            case "terminal" => handle_await_terminal(args)
-            case "atLeast" => println("awaiting"); handle_await_at_least(args)
-            case "no_events" => handle_await_no_events(args)
+            case "terminal" => handleAwaitTerminal(args)
+            case "atLeast" => println("awaiting"); handleAwaitAtLeast(args)
+            case "no_events" => handleAwaitNoEvents(args)
           }
         }
 
         // assert will have an insane number of cases
         case "assert" => {
           args(1) match {
-            case "no_error" => handle_no_error(args)
-            case "error" => handle_error(args)
-            case "received" => handle_received(args)
-            case "received_n" => handle_received_n(args)
-            case "received_at_least" => handle_received_at_least(args)
-            case "completed" => handle_completed(args)
-            case "no_completed" => handle_no_completed(args)
-            case "canceled" => handle_canceled(args)
+            case "no_error" => handleNoError(args)
+            case "error" => handleError(args)
+            case "received" => handleReceived(args)
+            case "received_n" => handleReceivedN(args)
+            case "received_at_least" => handleReceivedAtLeast(args)
+            case "completed" => handleCompleted(args)
+            case "no_completed" => handleNoCompleted(args)
+            case "canceled" => handleCancelled(args)
           }
         }
 
         // this tells the subscriber to request some number, and then canceled the subscription
-        case "take" => handle_take(args)
-        case "request" => handle_request(args)
-        case "cancel" => handle_cancel(args)
+        case "take" => handleTake(args)
+        case "request" => handleRequest(args)
+        case "cancel" => handleCancel(args)
         case "EOF" =>
       }
     }
@@ -150,7 +144,7 @@ class ClientDriver(path: String) {
     }
   }
 
-  private def handle_channel(args: Array[String], iter: Iterator[String]) : Unit = {
+  private def handleChannel(args: Array[String], iter: Iterator[String]) : Unit = {
     var commands: List[String] = List()
     var line = iter.next()
     // this gets the commands that will run this channel
@@ -183,7 +177,7 @@ class ClientDriver(path: String) {
     pub.subscribe(testsub)
   }
 
-  private def handle_await_terminal(args : Array[String]) : Unit = {
+  private def handleAwaitTerminal(args : Array[String]) : Unit = {
     val id = args(2)
     if (!idToType.get(id).isDefined) {
       println("could not find subscriber with given id")
@@ -200,19 +194,19 @@ class ClientDriver(path: String) {
     }
   }
 
-  private def handle_await_at_least(args: Array[String]) : Unit = {
+  private def handleAwaitAtLeast(args: Array[String]) : Unit = {
     val id = args(2)
     val sub = payloadSubscribers.get(id).get
     sub.awaitAtLeast(args(3).toLong, args(4).toLong, TimeUnit.MILLISECONDS)
   }
 
-  private def handle_await_no_events(args: Array[String]) : Unit = {
+  private def handleAwaitNoEvents(args: Array[String]) : Unit = {
     val id = args(2)
     val sub = payloadSubscribers.get(id).get
     sub.awaitNoEvents(args(3).toLong)
   }
 
-  private def handle_no_error(args: Array[String]) : Unit = {
+  private def handleNoError(args: Array[String]) : Unit = {
     val id = args(2)
     if (idToType.get(id).get.equals("fnf")) {
       // retrieve the subscriber from the fnf map
@@ -225,7 +219,7 @@ class ClientDriver(path: String) {
     }
   }
 
-  private def handle_error(args: Array[String]) : Unit = {
+  private def handleError(args: Array[String]) : Unit = {
     val id = args(2)
     if (idToType.get(id).get.equals("fnf")) {
       // retrieve the subscriber from the fnf map
@@ -238,7 +232,7 @@ class ClientDriver(path: String) {
     }
   }
 
-  private def handle_completed(args: Array[String]) : Unit = {
+  private def handleCompleted(args: Array[String]) : Unit = {
     val id = args(2)
     if (idToType.get(id).get.equals("fnf")) {
       // retrieve the subscriber from the fnf map
@@ -251,7 +245,7 @@ class ClientDriver(path: String) {
     }
   }
 
-  private def handle_no_completed(args: Array[String]) : Unit = {
+  private def handleNoCompleted(args: Array[String]) : Unit = {
     val id = args(2)
     if (idToType.get(id).get.equals("fnf")) {
       // retrieve the subscriber from the fnf map
@@ -264,7 +258,7 @@ class ClientDriver(path: String) {
     }
   }
 
-  private def handle_request(args: Array[String]) : Unit = {
+  private def handleRequest(args: Array[String]) : Unit = {
     val num = args(1).toLong
     val id = args(2)
     if (idToType.get(id).get.equals("fnf")) {
@@ -278,7 +272,7 @@ class ClientDriver(path: String) {
     }
   }
 
-  private def handle_take(args: Array[String]) : Unit = {
+  private def handleTake(args: Array[String]) : Unit = {
     val id = args(2)
     val num = args(1).toLong
     val sub = payloadSubscribers.get(id).get
@@ -286,7 +280,7 @@ class ClientDriver(path: String) {
   }
 
   // should only be called by payload subscribers
-  private def handle_received(args: Array[String]) : Unit = {
+  private def handleReceived(args: Array[String]) : Unit = {
     val id = args(2)
     val sub = payloadSubscribers.get(id).get
     val values = args(3).split("&&")
@@ -299,25 +293,25 @@ class ClientDriver(path: String) {
     }
   }
 
-  private def handle_received_n(args : Array[String]) : Unit = {
+  private def handleReceivedN(args : Array[String]) : Unit = {
     val id = args(2)
     val sub = payloadSubscribers.get(id).get
     sub.assertValueCount(args(3).toInt)
   }
 
-  private def handle_received_at_least(args : Array[String]) : Unit = {
+  private def handleReceivedAtLeast(args : Array[String]) : Unit = {
     val id = args(2)
     val sub = payloadSubscribers.get(id).get
     sub.assertReceivedAtLeast(args(3).toInt)
   }
 
-  private def handle_cancel(args: Array[String]) : Unit = {
+  private def handleCancel(args: Array[String]) : Unit = {
     val id = args(1)
     val sub = payloadSubscribers.get(id).get
     sub.cancel()
   }
 
-  private def handle_canceled(args: Array[String]) : Unit = {
+  private def handleCancelled(args: Array[String]) : Unit = {
     val id = args(2)
     val sub = payloadSubscribers.get(id).get
     sub.isCancelled

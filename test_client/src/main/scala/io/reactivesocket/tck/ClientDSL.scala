@@ -6,29 +6,17 @@ class ClientDSL {
 
   var writer: PrintWriter = new PrintWriter(new File(this.getClass.getSimpleName + ".txt"))
 
-  def requestResponse(data: String, metadata: String) : DSLTestSubscriber = {
-    return new DSLTestSubscriber(writer, data, metadata, "rr");
-  }
+  def requestResponse(data: String, metadata: String) : DSLTestSubscriber =
+    new DSLTestSubscriber(writer, data, metadata, "rr")
 
-  def requestStream(data: String, metadata: String) : DSLTestSubscriber = {
-    return new DSLTestSubscriber(writer, data, metadata, "rs");
-  }
+  def requestStream(data: String, metadata: String) : DSLTestSubscriber =
+    new DSLTestSubscriber(writer, data, metadata, "rs")
 
-  def firenForget(data: String, metadata: String) : DSLTestSubscriber = {
-    return new DSLTestSubscriber(writer, data, metadata, "fnf");
-  }
+  def firenForget(data: String, metadata: String) : DSLTestSubscriber =
+    new DSLTestSubscriber(writer, data, metadata, "fnf")
 
-  def requestSubscription(data: String, metadata: String) : DSLTestSubscriber = {
-    return new DSLTestSubscriber(writer, data, metadata, "sub");
-  }
-
-  def requestChannel(marble: Map[(String, String), String]) : DSLTestSubscriber = {
-    return new DSLTestSubscriber(writer, marble)
-  }
-
-  def requestChannel(argMap: Map[String, (String, String)], marble: Map[(String, String), String]) : DSLTestSubscriber = {
-    return new DSLTestSubscriber(writer, argMap, marble)
-  }
+  def requestSubscription(data: String, metadata: String) : DSLTestSubscriber =
+    new DSLTestSubscriber(writer, data, metadata, "sub")
 
   def end() : Unit = {
     println("ended")
@@ -51,7 +39,7 @@ class ClientDSL {
   object requestChannel extends ChannelHandler {
     override def using(data: String, meta: String) : ChannelHandler = {
       writer.write("channel%%" + data + "%%" + meta + "%%")
-      return this
+      this
     }
     override def asFollows(f: () => Unit) = {
       writer.write("{\n")
@@ -77,9 +65,9 @@ object clienttest extends ClientDSL {
     Tests.runTests(this, this.writer)
   }
 
-  /*// example for testing channel
+  // example for testing channel
   @Test
-  def channel_test() : Unit = {
+  def channelTest() : Unit = {
     requestChannel using("a", "b") asFollows(() => { // onChannelRequest
       respond("-a-")
       val s1 = channelSubscriber
@@ -100,7 +88,7 @@ object clienttest extends ClientDSL {
   }
 
   @Test
-  def requestresponse_pass() : Unit = {
+  def requestresponsePass() : Unit = {
     val s1 = requestResponse("a", "b")
     s1 request 1
     s1 awaitTerminal()
@@ -108,7 +96,7 @@ object clienttest extends ClientDSL {
   }
 
   @Test
-  def requestresponse_fail() : Unit = {
+  def requestresponseFail() : Unit = {
     val s1 = requestResponse("c", "d")
     s1 request 1
     s1 awaitTerminal()
@@ -119,7 +107,7 @@ object clienttest extends ClientDSL {
   }
 
   @Test
-  def requestresponse_pass2() : Unit = {
+  def requestresponsePass2() : Unit = {
     val s1 = requestResponse("e", "f")
     s1 request 1
     s1 awaitTerminal()
@@ -129,7 +117,7 @@ object clienttest extends ClientDSL {
 
   // example for testing stream
   @Test
-  def stream_test() : Unit = {
+  def streamTest() : Unit = {
     val s1 = requestStream("a", "b")
     s1 request 3
     //val s2 = requestStream("c", "d")
@@ -147,17 +135,17 @@ object clienttest extends ClientDSL {
   }
 
   @Test
-  def stream_test2() : Unit = {
+  def streamTest2() : Unit = {
     val s2 = requestStream("c", "d")
     s2 request 2
     s2 awaitAtLeast (2, 1000)
     s2 cancel()
     s2 assertCanceled()
     s2 assertNoErrors()
-  }*/
+  }
 
   @Test
-  def channel_test2() : Unit = {
+  def channelTest2() : Unit = {
     requestChannel using("c", "d") asFollows(() => { // onChannelRequest
       respond("-a-")
       val s1 = channelSubscriber
@@ -178,8 +166,8 @@ object clienttest extends ClientDSL {
     })
   }
 
-  /*@Test
-  def stream_test_fail() : Unit = {
+  @Test
+  def streamTestFail() : Unit = {
     val s2 = requestStream("c", "d")
     s2 request 2
     s2 awaitNoAdditionalEvents 5000
@@ -187,6 +175,6 @@ object clienttest extends ClientDSL {
     s2 cancel()
     s2 assertCanceled()
     s2 assertNoErrors()
-  }*/
+  }
 
 }

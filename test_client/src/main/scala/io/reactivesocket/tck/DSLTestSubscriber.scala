@@ -7,42 +7,19 @@ import io.reactivesocket.Payload
 import org.reactivestreams.{Subscriber, Subscription}
 
 import org.json4s._
-import org.json4s.native.Serialization._
 import org.json4s.native.Serialization
 
 
-class DSLTestSubscriber(writer : PrintWriter, argMap: Map[String, (String, String)], initData: String,
-                        initMeta: String, kind: String, marble: Map[(String, String), String])
+class DSLTestSubscriber(writer : PrintWriter, initData: String, initMeta: String, kind: String)
   extends Subscriber[Payload] with Subscription {
 
   implicit val formats = Serialization.formats(NoTypeHints)
-
-  // constructor for requestresponse, requeststream, firenforget, subscription
-  def this(writer : PrintWriter, initData: String, initMeta: String, kind: String) = {
-    this(writer, null, initData, initMeta, kind, Map())
-  }
-
-
-  //TODO: will have to extend channel stuff based on what we decide for specifications
-  // constructor for channel without argmap
-  def this(writer: PrintWriter, marble: Map[(String, String), String]) {
-    this(writer, null, "", "", "channel", marble)
-  }
-
-  // constructor for channel with argmap
-  def this(writer: PrintWriter, argMap: Map[String, (String, String)], marble: Map[(String, String), String]) = {
-    this(writer, argMap, "", "", "channel", marble)
-  }
 
   private var id: UUID = null
   this.id = UUID.randomUUID
 
   // decide what type of subscriber to write down
   if (kind.equals("")) writer.write("") // write nothing
-  else if (kind.equals("channel") && argMap == null) writer.write("subscribe%%channel%%" + this.getID + "%%"
-    + writechannel(marble) + "\n")
-  else if(argMap != null) writer.write("subscribe%%channel%%" + this.getID + "%%" + writechannel(marble) + "&&" + write(argMap)
-    + "\n")
   else writer.write("subscribe%%" + kind + "%%" + this.getID + "%%" + initData + "%%" + initMeta + "\n")
 
   def getID: String = return this.id.toString

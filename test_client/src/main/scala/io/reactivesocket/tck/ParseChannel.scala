@@ -29,7 +29,7 @@ class ParseChannel(commands: List[String], sub: TestSubscriber[Payload], parseMa
       val args: Array[String] = line.split("%%")
       args(0) match {
 
-        case "respond" => handle_respond(args)
+        case "respond" => handleResponse(args)
 
         case "await" => {
           args(1) match {
@@ -44,7 +44,7 @@ class ParseChannel(commands: List[String], sub: TestSubscriber[Payload], parseMa
           args(1) match {
             case "no_error" => sub.assertNoErrors
             case "error" => sub.assertError(new Throwable)
-            case "received" => handle_received(args)
+            case "received" => handleReceived(args)
             case "received_n" => sub.assertValueCount(args(3).toInt)
             case "received_at_least" => sub.assertReceivedAtLeast(args(3).toInt)
             case "completed" => sub.assertComplete
@@ -53,7 +53,7 @@ class ParseChannel(commands: List[String], sub: TestSubscriber[Payload], parseMa
           }
         }
 
-        case "take" => handle_request(args)
+        case "take" => handleRequest(args)
         case "request" => sub.request(args(1).toLong); println("requesting " + args(1).toLong)
         case "cancel" => sub.cancel
 
@@ -63,19 +63,19 @@ class ParseChannel(commands: List[String], sub: TestSubscriber[Payload], parseMa
     else println(ANSI_RED + "CHANNEL FAILED" + ANSI_RESET)
   }
 
-  private def handle_respond(args: Array[String]) = {
+  private def handleResponse(args: Array[String]) = {
     println("responding")
     val addThread = new AddThread(args(1), parseMarble)
     addThread.start()
   }
 
-  private def handle_request(args: Array[String]) = {
+  private def handleRequest(args: Array[String]) = {
     val requestThread = new RequestThread(args(1).toLong, parseMarble)
     requestThread.start()
   }
 
   // should only be called by payload subscribers
-  private def handle_received(args: Array[String]) : Unit = {
+  private def handleReceived(args: Array[String]) : Unit = {
     val values = args(3).split("&&")
     if (values.length == 1) {
       val temp = values(0).split(",")

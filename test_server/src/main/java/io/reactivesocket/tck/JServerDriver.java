@@ -63,7 +63,7 @@ public class JServerDriver {
                         requestSubscriptionMarbles.put(new Tuple<>(args[1], args[2]), args[3]);
                         break;
                     case "channel":
-                        handle_channel(args, reader);
+                        handleChannel(args, reader);
                     default:
                         break;
                 }
@@ -139,7 +139,7 @@ public class JServerDriver {
      * @param reader
      * @throws IOException
      */
-    private void handle_channel(String[] args, BufferedReader reader) throws IOException {
+    private void handleChannel(String[] args, BufferedReader reader) throws IOException {
         Tuple<String, String> initialPayload = new Tuple<>(args[1], args[2]);
         String line = reader.readLine();
         List<String> commands = new ArrayList<>();
