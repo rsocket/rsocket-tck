@@ -69,12 +69,12 @@ object clienttest extends ClientDSL {
     Tests.runTests(this, this.writer)
   }
 
-  @Test
+/*  @Test
   def echo() : Unit = {
     createEchoChannel using("x", "y")
-  }
+  }*/
 
-  /*@Test
+  @Test
   def echoTest() : Unit = {
     requestChannel using("e", "f") asFollows(() => {
       respond("a")
@@ -87,10 +87,10 @@ object clienttest extends ClientDSL {
       cs request(20)
 
     })
-  }*/
+  }
 
   // example for testing channel
-  /*@Test
+  @Test
   def channelTest() : Unit = {
     requestChannel using("a", "b") asFollows(() => { // onChannelRequest
       respond("-a-")
@@ -199,6 +199,6 @@ object clienttest extends ClientDSL {
     s2 cancel()
     s2 assertCanceled()
     s2 assertNoErrors()
-  }*/
+  }
 
 }

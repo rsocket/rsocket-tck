@@ -1,3 +1,4 @@
+/*
 package io.reactivesocket.tck
 
 import java.io.{BufferedReader, FileReader}
@@ -382,3 +383,4 @@ private class TestSubscription(pm: ParseMarble, initpayload: Payload, sub: Subsc
 }
 
 
+*/
