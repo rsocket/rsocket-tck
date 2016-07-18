@@ -16,7 +16,6 @@ package io.reactivesocket.tck;
 import io.reactivesocket.Payload;
 import org.reactivestreams.Subscriber;
 import org.reactivestreams.Subscription;
-import scala.Tuple2;
 
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -36,11 +35,6 @@ public class EchoSubscription implements Subscription {
 
     public void add(Tuple<String, String> payload) {
         q.add(payload);
-        if (numSent < numRequested) request(0);
-    }
-
-    public void add(Tuple2<String, String> payload) {
-        q.add(new Tuple<>(payload._1, payload._2));
         if (numSent < numRequested) request(0);
     }
 

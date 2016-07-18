@@ -26,6 +26,7 @@ libraryDependencies += "org.json4s" %% "json4s-native" % "3.3.0"
 libraryDependencies += "com.fasterxml.jackson.core" % "jackson-core" % "2.8.0.rc2"
 libraryDependencies += "com.fasterxml.jackson.core" % "jackson-databind" % "2.8.0.rc2"
 libraryDependencies += "org.scala-lang" % "scala-reflect" % "2.11.8"
+libraryDependencies += "net.sf.jopt-simple"% "jopt-simple" % "5.0.2"
 
 resolvers += "Typesafe Releases" at "http://repo.typesafe.com/typesafe/releases/"
 resolvers += "jfrog" at "https://oss.jfrog.org/libs-snapshot"
