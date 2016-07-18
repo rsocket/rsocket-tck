@@ -1,3 +1,16 @@
+/*
+ * Copyright 2016 Facebook, Inc.
+ * <p>
+ *  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
+ *  the License. You may obtain a copy of the License at
+ *  <p>
+ *  http://www.apache.org/licenses/LICENSE-2.0
+ *  <p>
+ *  Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on
+ *  an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
+ *  specific language governing permissions and limitations under the License.
+ */
+
 package io.reactivesocket.tck;
 
 import io.reactivesocket.Payload;
@@ -10,8 +23,6 @@ import io.reactivex.internal.subscriptions.SubscriptionHelper;
 import io.reactivex.internal.util.BackpressureHelper;
 import org.reactivestreams.Subscriber;
 import org.reactivestreams.Subscription;
-import scala.Int;
-import scala.Tuple2;
 
 import java.util.*;
 import java.util.concurrent.CountDownLatch;
@@ -36,7 +47,7 @@ public class TestSubscriber<T> implements Subscriber<T>, Subscription, Disposabl
     /**
      * The list of values received.
      */
-    private final List<Tuple2<String, String>> values;
+    private final List<Tuple<String, String>> values;
     /**
      * The list of errors received.
      */
@@ -70,12 +81,12 @@ public class TestSubscriber<T> implements Subscriber<T>, Subscription, Disposabl
      * After the timeout, we look at the value inside the countdown latch to make sure we counted down the
      * number of values we expected
      */
-    private CountDownLatch numOnNext = new CountDownLatch(Int.MaxValue());
+    private CountDownLatch numOnNext = new CountDownLatch(Integer.MAX_VALUE);
 
     /**
      * This latch handles the logic in take.
      */
-    private CountDownLatch takeLatch = new CountDownLatch(Int.MaxValue());
+    private CountDownLatch takeLatch = new CountDownLatch(Integer.MAX_VALUE);
 
     /**
      * Keeps track if this test subscriber is passing
@@ -175,7 +186,7 @@ public class TestSubscriber<T> implements Subscriber<T>, Subscription, Disposabl
                     try {
                         Payload t;
                         while ((t = qs.poll()) != null) {
-                            values.add(new Tuple2<>(PayloadImpl.byteToString(t.getData()),
+                            values.add(new Tuple<>(PayloadImpl.byteToString(t.getData()),
                                     PayloadImpl.byteToString(t.getMetadata())));
                         }
                         completions++;
@@ -207,9 +218,9 @@ public class TestSubscriber<T> implements Subscriber<T>, Subscription, Disposabl
     @Override
     public void onNext(T t) {
         Payload p = (Payload) t;
-        Tuple2<String, String> tup = new Tuple2<>(PayloadImpl.byteToString(p.getData()),
+        Tuple<String, String> tup = new Tuple<>(PayloadImpl.byteToString(p.getData()),
                 PayloadImpl.byteToString(p.getMetadata()));
-        System.out.println("ON NEXT GOT : "  + tup._1 + " " + tup._2);
+        System.out.println("ON NEXT GOT : "  + tup.getK() + " " + tup.getV());
         if (isEcho) {
             echosub.add(tup);
             return;
@@ -224,7 +235,7 @@ public class TestSubscriber<T> implements Subscriber<T>, Subscription, Disposabl
 
         if (establishedFusionMode == QueueSubscription.ASYNC) {
             while ((p = qs.poll()) != null) {
-                values.add(new Tuple2<>(PayloadImpl.byteToString(p.getData()),
+                values.add(new Tuple<>(PayloadImpl.byteToString(p.getData()),
                         PayloadImpl.byteToString(p.getMetadata())));
             }
             return;
@@ -238,7 +249,7 @@ public class TestSubscriber<T> implements Subscriber<T>, Subscription, Disposabl
             errors.add(new NullPointerException("onNext received a null Subscription"));
         }
 
-        actual.onNext(new PayloadImpl(tup._1, tup._2));
+        actual.onNext(new PayloadImpl(tup.getK(), tup.getV()));
     }
 
     @Override
@@ -315,7 +326,7 @@ public class TestSubscriber<T> implements Subscriber<T>, Subscription, Disposabl
             cancel();
             return;
         }
-        while(Int.MaxValue() - takeLatch.getCount() < n) {
+        while(Integer.MAX_VALUE - takeLatch.getCount() < n) {
             try {
                 takeLatch.await(100, TimeUnit.MILLISECONDS);
             } catch (Exception e) {
@@ -372,7 +383,7 @@ public class TestSubscriber<T> implements Subscriber<T>, Subscription, Disposabl
      *
      * @return a list of received onNext values
      */
-    public final List<Tuple2<String, String>> values() {
+    public final List<Tuple<String, String>> values() {
         return values;
     }
 
@@ -469,7 +480,7 @@ public class TestSubscriber<T> implements Subscriber<T>, Subscription, Disposabl
             numOnNext.await(time, unit);
         }
         pass("got " + values.size() + " out of " + n + " values expected", true);
-        numOnNext = new CountDownLatch(Int.MaxValue());
+        numOnNext = new CountDownLatch(Integer.MAX_VALUE);
         return true;
     }
 
@@ -675,7 +686,7 @@ public class TestSubscriber<T> implements Subscriber<T>, Subscription, Disposabl
      *
      * @return this
      */
-    public final TestSubscriber assertValue(Tuple2<String, String> value) {
+    public final TestSubscriber assertValue(Tuple<String, String> value) {
         String prefix = "";
         boolean passed = true;
         if (done.getCount() != 0) {
@@ -687,7 +698,7 @@ public class TestSubscriber<T> implements Subscriber<T>, Subscription, Disposabl
             fail("value does not match");
             passed = false;
         }
-        Tuple2<String, String> v = values.get(0);
+        Tuple<String, String> v = values.get(0);
         if (!Objects.equals(value, v)) {
             fail(prefix, "Expected: " + valueAndClass(value) + ", Actual: " + valueAndClass(v), errors);
             fail("value does not match");
@@ -759,22 +770,22 @@ public class TestSubscriber<T> implements Subscriber<T>, Subscription, Disposabl
      * @return this
      * @see #assertValueSet(Collection)
      */
-    public final TestSubscriber assertValues(Tuple2<String, String>[] values) {
+    public final TestSubscriber assertValues(List<Tuple<String, String>> values) {
         String prefix = "";
         boolean passed = true;
         if (done.getCount() != 0) {
             prefix = "Subscriber still running! ";
         }
         int s = this.values.size();
-        if (s != values.length) {
-            fail(prefix, "Value count differs; Expected: " + values.length + " " + Arrays.toString(values)
+        if (s != values.size()) {
+            fail(prefix, "Value count differs; Expected: " + values.size() + " " + values
                     + ", Actual: " + s + " " + this.values, errors);
             passed = false;
             fail("length incorrect");
         }
         for (int i = 0; i < s; i++) {
-            Tuple2<String, String> v = this.values.get(i);
-            Tuple2<String, String> u = values[i];
+            Tuple<String, String> v = this.values.get(i);
+            Tuple<String, String> u = values.get(i);
             if (!Objects.equals(u, v)) {
                 fail(prefix, "Values at position " + i + " differ; Expected: "
                         + valueAndClass(u) + ", Actual: " + valueAndClass(v), errors);
@@ -794,7 +805,7 @@ public class TestSubscriber<T> implements Subscriber<T>, Subscription, Disposabl
      * @param values the collection of values expected in any order
      * @return this
      */
-    public final TestSubscriber assertValueSet(Collection<? extends Tuple2<String, String>> values) {
+    public final TestSubscriber assertValueSet(Collection<? extends Tuple<String, String>> values) {
         String prefix = "";
         if (done.getCount() != 0) {
             prefix = "Subscriber still running! ";
@@ -805,7 +816,7 @@ public class TestSubscriber<T> implements Subscriber<T>, Subscription, Disposabl
                     + ", Actual: " + s + " " + this.values, errors);
         }
         for (int i = 0; i < s; i++) {
-            Tuple2<String, String> v = this.values.get(i);
+            Tuple<String, String> v = this.values.get(i);
 
             if (!values.contains(v)) {
                 fail(prefix, "Value not in the expected collection: " + valueAndClass(v), errors);
@@ -820,19 +831,19 @@ public class TestSubscriber<T> implements Subscriber<T>, Subscription, Disposabl
      * @param sequence the sequence of expected values in order
      * @return this
      */
-    public final TestSubscriber assertValueSequence(Iterable<? extends Tuple2<String, String>> sequence) {
+    public final TestSubscriber assertValueSequence(Iterable<? extends Tuple<String, String>> sequence) {
         String prefix = "";
         if (done.getCount() != 0) {
             prefix = "Subscriber still running! ";
         }
         int i = 0;
-        Iterator<Tuple2<String, String>> vit = values.iterator();
-        Iterator<? extends Tuple2<String, String>> it = sequence.iterator();
+        Iterator<Tuple<String, String>> vit = values.iterator();
+        Iterator<? extends Tuple<String, String>> it = sequence.iterator();
         boolean itNext = false;
         boolean vitNext = false;
         while ((itNext = it.hasNext()) && (vitNext = vit.hasNext())) {
-            Tuple2<String, String> v = it.next();
-            Tuple2<String, String> u = vit.next();
+            Tuple<String, String> v = it.next();
+            Tuple<String, String> u = vit.next();
 
             if (!Objects.equals(u, v)) {
                 fail(prefix, "Values at position " + i + " differ; Expected: "
@@ -1095,7 +1106,7 @@ public class TestSubscriber<T> implements Subscriber<T>, Subscription, Disposabl
      * @param n the index of the element you want
      * @return the nth element
      */
-    public Tuple2<String, String> getElement(int n) {
+    public Tuple<String, String> getElement(int n) {
         return this.values.get(n);
     }
 

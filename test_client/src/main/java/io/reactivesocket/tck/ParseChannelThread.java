@@ -13,12 +13,30 @@
 
 package io.reactivesocket.tck;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+public class ParseChannelThread implements Runnable {
 
-@Target(ElementType.METHOD)
-@Retention(RetentionPolicy.RUNTIME)
-public @interface Test {
+    private ParseChannel pc;
+    private Thread t;
+
+    public ParseChannelThread(ParseChannel pc) {
+        this.pc = pc;
+        this.t = new Thread(this);
+    }
+
+    @Override
+    public void run() {
+        pc.parse();
+    }
+
+    public void start() {
+        t.start();
+    }
+
+    public void join() {
+        try {
+            t.join();
+        } catch (InterruptedException e) {
+            System.out.println("interrupted");
+        }
+    }
 }

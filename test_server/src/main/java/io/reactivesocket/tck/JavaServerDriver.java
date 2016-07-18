@@ -1,3 +1,16 @@
+/*
+ * Copyright 2016 Facebook, Inc.
+ * <p>
+ *  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
+ *  the License. You may obtain a copy of the License at
+ *  <p>
+ *  http://www.apache.org/licenses/LICENSE-2.0
+ *  <p>
+ *  Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on
+ *  an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
+ *  specific language governing permissions and limitations under the License.
+ */
+
 package io.reactivesocket.tck;
 
 import io.reactivesocket.Payload;
@@ -14,7 +27,7 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 
-public class JServerDriver {
+public class JavaServerDriver {
 
     private String path;
 
@@ -29,7 +42,7 @@ public class JServerDriver {
     private BufferedReader reader;
     // will implement channel later
 
-    public JServerDriver(String path) {
+    public JavaServerDriver(String path) {
         this.path = path;
         requestResponseMarbles = new HashMap<>();
         requestStreamMarbles = new HashMap<>();
@@ -109,6 +122,7 @@ public class JServerDriver {
             System.out.println("Subscription " + initialPayload.getK() + " " + initialPayload.getV());
             if (marble != null) {
                 ParseMarble pm = new ParseMarble(marble, s);
+                new ParseThread(pm).start();
                 s.onSubscribe(new TestSubscription(pm));
             }
         }).withRequestChannel(payloadPublisher -> s -> { // design flaw
@@ -119,7 +133,7 @@ public class JServerDriver {
                 // want to get equivalent of "initial payload"
                 //sub.request(1); // first request of server is implicit, so don't need to call request(1) here
                 sub.awaitAtLeast(1, 1000, TimeUnit.MILLISECONDS);
-                Tuple<String, String> initpayload = new Tuple<>(sub.getElement(0)._1, sub.getElement(0)._2);
+                Tuple<String, String> initpayload = new Tuple<>(sub.getElement(0).getK(), sub.getElement(0).getV());
                 System.out.println(initpayload.getK() + " " + initpayload.getV());
                 // if this is a normal channel handler, then initiate the normal setup
                 if (requestChannelCommands.containsKey(initpayload)) {

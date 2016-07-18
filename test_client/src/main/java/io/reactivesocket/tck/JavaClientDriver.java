@@ -1,3 +1,16 @@
+/*
+ * Copyright 2016 Facebook, Inc.
+ * <p>
+ *  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
+ *  the License. You may obtain a copy of the License at
+ *  <p>
+ *  http://www.apache.org/licenses/LICENSE-2.0
+ *  <p>
+ *  Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on
+ *  an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
+ *  specific language governing permissions and limitations under the License.
+ */
+
 package io.reactivesocket.tck;
 
 import io.reactivesocket.Payload;
@@ -58,21 +71,24 @@ public class JavaClientDriver {
         }
     }
 
-
     public Optional<Boolean> parse(List<String> test) {
+        return parse(test, "");
+    }
+
+
+    public Optional<Boolean> parse(List<String> test, String name) {
         List<String> id = new ArrayList<>();
         Iterator<String> iter = test.iterator();
         while (iter.hasNext()) {
             String line = iter.next();
             String[] args = line.split("%%");
-            System.out.println(Arrays.toString(args));
             switch (args[0]) {
                 case "subscribe":
                     handleSubscribe(args);
                     id.add(args[2]);
                     break;
                 case "channel":
-                    handleChannel(args, iter);
+                    handleChannel(args, iter, name);
                     break;
                 case "echochannel":
                     handleEchoChannel(args);
@@ -139,14 +155,6 @@ public class JavaClientDriver {
             }
 
         }
-        // TODO : translate this to Java
-        /*if (id.length > 0) return Some(id.foldRight(true) {(a, b) =>
-            var x = false;
-            if (payloadSubscribers.get(a).isDefined) x = payloadSubscribers.get(a).get.hasPassed
-            else x = fnfSubscribers.get(a).get.hasPassed
-            x && b
-        })
-        else return None*/
 
         if (id.size() > 0) {
             boolean hasPassed = true;
@@ -197,7 +205,7 @@ public class JavaClientDriver {
         }
     }
 
-    private void handleChannel(String[] args, Iterator<String> iter) {
+    private void handleChannel(String[] args, Iterator<String> iter, String name) {
         List<String> commands = new ArrayList<>();
         String line = iter.next();
         // channel script should be bounded by curly braces
@@ -222,7 +230,7 @@ public class JavaClientDriver {
                 ParseMarble pm = new ParseMarble(s);
                 TestSubscription ts = new TestSubscription(pm, initialPayload, s);
                 s.onSubscribe(ts);
-                ParseChannel pc = new ParseChannel(commands, testsub, pm);
+                ParseChannel pc = new ParseChannel(commands, testsub, pm, name);
                 ParseChannelThread pct = new ParseChannelThread(pc);
                 pct.start();
                 pct.join();
@@ -249,7 +257,6 @@ public class JavaClientDriver {
 
     private void handleAwaitTerminal(String[] args) {
         String id = args[2];
-        System.out.println(id);
         if (idToType.get(id) == null) {
             System.out.println("Could not find subscriber with given id");
         } else {
@@ -285,8 +292,6 @@ public class JavaClientDriver {
 
     private void handleNoError(String[] args) {
         String id = args[2];
-        System.out.println(id);
-        System.out.println(idToType);
         if (idToType.get(id) == null) {
             System.out.println("Could not find subscriber with given id");
         } else {
@@ -302,8 +307,6 @@ public class JavaClientDriver {
 
     private void handleError(String[] args) {
         String id = args[2];
-        System.out.println(id);
-        System.out.println(idToType);
         if (idToType.get(id) == null) {
             System.out.println("Could not find subscriber with given id");
         } else {
@@ -319,8 +322,6 @@ public class JavaClientDriver {
 
     private void handleCompleted(String[] args) {
         String id = args[2];
-        System.out.println(id);
-        System.out.println(idToType);
         if (idToType.get(id) == null) {
             System.out.println("Could not find subscriber with given id");
         } else {
@@ -336,8 +337,6 @@ public class JavaClientDriver {
 
     private void handleNoCompleted(String[] args) {
         String id = args[2];
-        System.out.println(id);
-        System.out.println(idToType);
         if (idToType.get(id) == null) {
             System.out.println("Could not find subscriber with given id");
         } else {
@@ -354,8 +353,6 @@ public class JavaClientDriver {
     private void handleRequest(String[] args) {
         Long num = Long.parseLong(args[1]);
         String id = args[2];
-        System.out.println(id);
-        System.out.println(idToType);
         if (idToType.get(id) == null) {
             System.out.println("Could not find subscriber with given id");
         } else {
@@ -381,7 +378,15 @@ public class JavaClientDriver {
         TestSubscriber<Payload> sub = payloadSubscribers.get(id);
         String[] values = args[3].split("&&");
         if (values.length == 1) {
-
+            String[] temp = values[0].split(",");
+            sub.assertValue(new Tuple<>(temp[0], temp[1]));
+        } else if (values.length > 1) {
+            List<Tuple<String, String>> assertList = new ArrayList<>();
+            for (String v : values) {
+                String[] vals = v.split(",");
+                assertList.add(new Tuple<>(vals[0], vals[1]));
+            }
+            sub.assertValues(assertList);
         }
     }
 
@@ -427,7 +432,7 @@ public class JavaClientDriver {
             if (test.get(0).startsWith("name")) {
                 name = test.get(0).split("%%")[1];
                 System.out.println("Starting test " + name);
-                Optional<Boolean> finish = parse(test.subList(1, test.size()));
+                Optional<Boolean> finish = parse(test.subList(1, test.size()), name);
                 if (!finish.isPresent()) return;
                 if (finish.get()) System.out.println(ANSI_GREEN + name + " passed" + ANSI_RESET);
                 else System.out.println(ANSI_RED + name + " failed" + ANSI_RESET);

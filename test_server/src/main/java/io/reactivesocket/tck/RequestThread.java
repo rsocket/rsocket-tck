@@ -13,12 +13,24 @@
 
 package io.reactivesocket.tck;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+public class RequestThread implements Runnable {
 
-@Target(ElementType.METHOD)
-@Retention(RetentionPolicy.RUNTIME)
-public @interface Test {
+    private long n;
+    private ParseMarble parseMarble;
+    private Thread t;
+
+    public RequestThread(long n, ParseMarble parseMarble) {
+        this.n = n;
+        this.parseMarble = parseMarble;
+        this.t = new Thread(this);
+    }
+
+    @Override
+    public void run() {
+        parseMarble.request(n);
+    }
+
+    public void start() {
+        t.start();
+    }
 }
