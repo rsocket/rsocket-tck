@@ -1,37 +1,35 @@
+/*
+ * Copyright 2016 Facebook, Inc.
+ * <p>
+ *  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
+ *  the License. You may obtain a copy of the License at
+ *  <p>
+ *  http://www.apache.org/licenses/LICENSE-2.0
+ *  <p>
+ *  Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on
+ *  an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
+ *  specific language governing permissions and limitations under the License.
+ */
+
 package io.reactivesocket.tck
 
 import java.io.{File, PrintWriter}
 
-/**
-  * Created by mjzhu on 7/5/16.
-  */
 class ClientDSL {
 
-  val writer: PrintWriter = new PrintWriter(new File(this.getClass.getSimpleName + ".txt"))
+  var writer: PrintWriter = new PrintWriter(new File(this.getClass.getSimpleName + ".txt"))
 
-  def requestResponse(data: String, metadata: String) : DSLTestSubscriber = {
-    return new DSLTestSubscriber(writer, data, metadata, "rr");
-  }
+  def requestResponse(data: String, metadata: String) : DSLTestSubscriber =
+    new DSLTestSubscriber(writer, data, metadata, "rr")
 
-  def requestStream(data: String, metadata: String) : DSLTestSubscriber = {
-    return new DSLTestSubscriber(writer, data, metadata, "rs");
-  }
+  def requestStream(data: String, metadata: String) : DSLTestSubscriber =
+    new DSLTestSubscriber(writer, data, metadata, "rs")
 
-  def firenForget(data: String, metadata: String) : DSLTestSubscriber = {
-    return new DSLTestSubscriber(writer, data, metadata, "fnf");
-  }
+  def firenForget(data: String, metadata: String) : DSLTestSubscriber =
+    new DSLTestSubscriber(writer, data, metadata, "fnf")
 
-  def requestSubscription(data: String, metadata: String) : DSLTestSubscriber = {
-    return new DSLTestSubscriber(writer, data, metadata, "sub");
-  }
-
-  def requestChannel(marble: Map[(String, String), String]) : DSLTestSubscriber = {
-    return new DSLTestSubscriber(writer, marble)
-  }
-
-  def requestChannel(argMap: Map[String, (String, String)], marble: Map[(String, String), String]) : DSLTestSubscriber = {
-    return new DSLTestSubscriber(writer, argMap, marble)
-  }
+  def requestSubscription(data: String, metadata: String) : DSLTestSubscriber =
+    new DSLTestSubscriber(writer, data, metadata, "sub")
 
   def end() : Unit = {
     println("ended")
@@ -39,57 +37,42 @@ class ClientDSL {
     writer.close()
   }
 
-  def begintest(test : () => Unit) : Unit = {
+  def begintest() : Unit = {
     writer.write("!\n")
-    test()
   }
 
   def nametest(name: String) : Unit = writer.write("name%%" + name + "\n")
 
-}
 
-object clienttest extends ClientDSL {
-  def main(args: Array[String]) {
-    //begintest(test0)
-    begintest(test1)
-    begintest(test2)
-    begintest(test3)
-    end
+  trait ChannelHandler {
+    def using(data: String, meta: String) : ChannelHandler
+    def asFollows(f: () => Unit): Unit
   }
 
-  def test0() : Unit = {
-    val s1 = requestChannel(Map("x" -> ("hello", "goodbye")), Map(
-      ("a", "b") -> "--x--x--|",
-      ("c", "d") -> "----#"
-    )) // sets up the channel handler,
-
+  object requestChannel extends ChannelHandler {
+    override def using(data: String, meta: String) : ChannelHandler = {
+      writer.write("channel%%" + data + "%%" + meta + "%%")
+      this
+    }
+    override def asFollows(f: () => Unit) = {
+      writer.write("{\n")
+      f()
+      writer.write("}\n")
+    }
   }
 
-  def test1() : Unit = {
-    nametest("test1")
-    val s1 = requestResponse("a", "b")
-    s1 request 1
-    s1 awaitTerminal()
-    s1 assertCompleted()
+  object createEchoChannel {
+    def using(data: String, meta: String) : Unit = writer.write("echochannel%%" + data + "%%" + meta + "\n")
   }
 
-  def test2() : Unit = {
-    nametest("test2")
-    val s1 = requestResponse("c", "d")
-    s1 request 1
-    s1 awaitTerminal()
-    s1 assertReceived List(("ding", "dong"))
-    s1 assertCompleted()
-    s1 assertNotCompleted()
-    s1 assertNoErrors()
+  def channelSubscriber() : DSLTestSubscriber = {
+    // we create a trivial subscriber because we don't need a "real" one, because we will already pass in a test
+    // subscriber in the driver, as one should have already been created to get the initial payload from the client
+    return new DSLTestSubscriber(writer, "", "", "");
   }
 
-  def test3() : Unit = {
-    nametest("test3")
-    val s1 = requestResponse("e", "f")
-    s1 request 1
-    s1 awaitTerminal()
-    s1 assertError()
-    s1 assertNotCompleted()
+  def respond(marble : String) : Unit = {
+    writer.write("respond%%" + marble + "\n")
   }
+
 }

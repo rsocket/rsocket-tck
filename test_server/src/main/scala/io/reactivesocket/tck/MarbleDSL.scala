@@ -1,10 +1,21 @@
+/*
+ * Copyright 2016 Facebook, Inc.
+ * <p>
+ *  Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with
+ *  the License. You may obtain a copy of the License at
+ *  <p>
+ *  http://www.apache.org/licenses/LICENSE-2.0
+ *  <p>
+ *  Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on
+ *  an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the
+ *  specific language governing permissions and limitations under the License.
+ */
+
 package io.reactivesocket.tck
 
 import java.io.{File, PrintWriter}
 
 import scala.collection.immutable.Queue
-
-
 
 class MarbleDSL {
 
@@ -13,7 +24,7 @@ class MarbleDSL {
   import org.json4s.native.Serialization
   implicit val formats = Serialization.formats(NoTypeHints)
 
-  val writer: PrintWriter = new PrintWriter(new File(this.getClass.getSimpleName + ".txt"))
+  var writer: PrintWriter = new PrintWriter(new File(this.getClass.getSimpleName + ".txt"))
 
   trait Handler {
     def handle(data: String, meta: String) : Handler
@@ -22,6 +33,12 @@ class MarbleDSL {
     def using(e : MyError)
     def using(s : String) // for people who want to write the actual ascii
     def using(values: Map[String, (String, String)], s : String)
+  }
+
+
+  trait ChannelHandler {
+    def handle(data: String, meta: String) : ChannelHandler
+    def asFollows(f: () => Unit): Unit
   }
 
   abstract class MyError
@@ -64,30 +81,41 @@ class MarbleDSL {
   object requestResponse extends HandlerImpl {
     override def handle(data: String, meta: String) : Handler = {
       writer.write("rr%%" + data + "%%" + meta + "%%")
-      return this
+      this
     }
   }
 
   object requestStream extends HandlerImpl {
     override def handle(data: String, meta: String) : Handler = {
       writer.write("rs%%" + data + "%%" + meta + "%%")
-      return this
+      this
     }
   }
 
   object requestSubscription extends HandlerImpl {
     override def handle(data: String, meta: String) : Handler = {
       writer.write("sub%%" + data + "%%" + meta + "%%")
-      return this
+      this
     }
   }
 
-/*  object requestChannel extends HandlerImpl {
-    override def handle(data: String, meta: String) : Handler = {
+  object requestChannel extends ChannelHandler {
+    override def handle(data: String, meta: String) : ChannelHandler = {
       writer.write("channel%%" + data + "%%" + meta + "%%")
-      return this
+      this
     }
-  }*/
+    override def asFollows(f: () => Unit) = {
+      writer.write("{\n")
+      f()
+      writer.write("}\n")
+    }
+  }
+
+  object requestEchoChannel {
+    def handle(data: String, meta: String) : Unit = {
+      writer.write("echochannel%%" + data + "%%" + meta + "\n")
+    }
+  }
 
 
   // Marble DSL
@@ -103,38 +131,38 @@ class MarbleDSL {
       for (i <- 0 until n) {
         s += "-"
       }
-      return this
+      this
     }
-    override def str : String = return s
+    override def str : String = s
   }
 
   object complete extends Marble {
     def apply : Marble = return this
-    override def str : String = return "|"
+    override def str : String = "|"
   }
 
   object error extends Marble {
     def apply : Marble = return this
-    override def str : String = return "#"
+    override def str : String = "#"
   }
 
   object emit extends Marble {
     var ch : Queue[Char] = Queue.empty
     def apply(c: Char) : Marble = {
       ch = ch.enqueue(c)
-      return this
+      this
     }
     override def str : String = {
       val temp : (Char, Queue[Char]) = ch.dequeue
       val toReturn : Char = temp._1
       ch = temp._2
-      return toReturn.toString
+      toReturn.toString
     }
   }
 
   object sub extends Marble {
     def apply : Marble = return this
-    override def str : String = return "^"
+    override def str : String = "^"
   }
 
   object group extends Marble {
@@ -145,9 +173,9 @@ class MarbleDSL {
         s += m.str
       }
       s += ")"
-      return this
+      this
     }
-    override def str : String = return s
+    override def str : String = s
   }
 
 
@@ -156,17 +184,15 @@ class MarbleDSL {
     writer.close()
   }
 
-}
 
-object servertest extends MarbleDSL {
-  def main(args: Array[String]) {
-    requestResponse handle("a", "b") using(Map("x" -> ("hello", "goodbye")), pause(3), emit('x'),
-      pause(4), pause(5), complete)
-    requestResponse handle("c", "d") using(Map("x" -> ("ding", "dong")), pause(10), emit('x'),
-      pause(10), complete)
-    requestResponse handle("e", "f") using(pause(10), error)
-    requestResponse handle("g", "h") using("-")
-
-    end
+  def channelSubscriber() : DSLTestSubscriber = {
+    // we create a trivial subscriber because we don't need a "real" one, because we will already pass in a test
+    // subscriber in the driver, as one should have already been created to get the initial payload from the client
+    new DSLTestSubscriber(writer, "", "", "");
   }
+
+  def respond(marble : String) : Unit = {
+    writer.write("respond%%" + marble + "\n")
+  }
+
 }
