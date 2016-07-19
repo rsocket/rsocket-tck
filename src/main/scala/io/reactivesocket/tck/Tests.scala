@@ -45,6 +45,6 @@ object ResponderTests extends ResponderDSL {
       }
     }
     end
-    Files.deleteIfExists(Paths.get("ResponderTests.txt"))
+    Files.deleteIfExists(Paths.get("ResponderTests$.txt"))
   }
 }
