@@ -15,7 +15,7 @@ package io.reactivesocket.tck
 
 import java.io.{File, PrintWriter}
 
-class ClientDSL {
+class RequesterDSL {
 
   var writer: PrintWriter = new PrintWriter(new File(this.getClass.getSimpleName + ".txt"))
 
