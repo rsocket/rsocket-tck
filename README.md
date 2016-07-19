@@ -71,8 +71,6 @@ Notice that the test for channel incorporates both server and client behavior. Y
 tests. So for example, calling `respond(...)` and then `request ...` will not block the request if the client can't respond, but calling `await ...` will block anything after it, but not respond requests
 that have already be started.
 
-#### We will update this to use reflection like JUnit tests
-
 ## Responder DSL
 The responder DSL example is the dual to the above requester DSL.
 ```
