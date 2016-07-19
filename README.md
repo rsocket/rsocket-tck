@@ -14,16 +14,30 @@ This allows implementers of the Reactive Socket protocol to be able to write the
 
 The DSLs are designed to be human readable as well, and should require very little documentation to understand. Here is an example of the client side DSL
 ```
+  object clienttest extends ClientDSL {
   def main(args: Array[String]) {
-    begintest(test0)
-    begintest(test4)
-    end
+    Tests.runTests(this, this.writer)
+  }
+
+  @Test
+  def echoTest() : Unit = {
+    requestChannel using("e", "f") asFollows(() => {
+      respond("a")
+      val cs = channelSubscriber()
+      cs request(1)
+      cs awaitAtLeast (1, 1000)
+      cs request(10)
+      respond("abcdefghijkmlnopqrstuvwxyz")
+      cs awaitAtLeast (10, 1000)
+      cs request(20)
+
+    })
   }
 
   // example for testing channel
-  def test0() : Unit = {
-    // using determines the initial payload sent
-    requestChannel using("a", "b") asFollows(() => {
+  @Test
+  def channelTest() : Unit = {
+    requestChannel using("a", "b") asFollows(() => { // onChannelRequest
       respond("-a-")
       val s1 = channelSubscriber
       s1 request 1
@@ -42,29 +56,16 @@ The DSLs are designed to be human readable as well, and should require very litt
     })
   }
 
-....
-
-  // example for testing stream
-  def test4() : Unit = {
-    nametest("test4")
-    val s1 = requestStream("a", "b")
-    s1 request 3
-    val s2 = requestStream("c", "d")
-    s1 awaitAtLeast(3, 2000)
-    s2 request 1
-    s1 assertReceived(List(("a", "b"), ("c", "d"), ("e", "f")))
-    s1 request 3
+  @Test
+  def requestresponsePass() : Unit = {
+    val s1 = requestResponse("a", "b")
+    s1 request 1
     s1 awaitTerminal()
     s1 assertCompleted()
-    s1 assertNoErrors()
-    s1 assertReceivedCount 6
-    s2 cancel()
-    s2 assertCanceled()
-    s2 assertNoErrors()
   }
+  ....
+}
 ```
-In the above example, we create a requestResponse subscriber and subscribe it to a trivial publisher with initial payload data "a" and metadata "b". We then call request on it, and assert the behaviors we expect.
-When we assert received, since it is a requestResponse, we only expect a list of 1 payload, and we assert both the data and metadata received. In this example, we are testing interleaving 3 requestResponse subscribers.
 
 Notice that the test for channel incorporates both server and client behavior. You are able to send data and assert data received. The IO is non-blocking, while the await blocks the thread running the main
 tests. So for example, calling `respond(...)` and then `request ...` will not block the request if the client can't respond, but calling `await ...` will block anything after it, but not respond requests
@@ -75,24 +76,34 @@ that have already be started.
 ## Responder DSL
 The responder DSL example is the dual to the above requester DSL.
 ```
-    // this handles request response
+object servertest extends MarbleDSL {
+  def main(args: Array[String]) {
+    Tests.runTests(this, this.writer)
+  }
+
+  @Test
+  def handleRequestResponse() : Unit = {
     requestResponse handle("a", "b") using(Map("x" -> ("hello", "goodbye")), pause(3), emit('x'),
       pause(4), pause(5), complete)
+
     requestResponse handle("c", "d") using(Map("x" -> ("ding", "dong")), pause(10), emit('x'),
       pause(10), complete)
-    requestResponse handle("e", "f") using(pause(10), error)
-    requestResponse handle("g", "h") using("-")
 
-    // this handles request streams
+    requestResponse handle("e", "f") using(pause(10), error)
+
+    requestResponse handle("g", "h") using("-")
+  }
+
+  @Test
+  def handleRequestStream() : Unit = {
     requestStream handle("a", "b") using(Map("a" -> ("a", "b"), "b" -> ("c", "d"), "c" -> ("e", "f")),
       "---a-----b-----c-----d--e--f---|")
-    requestStream handle("c", "e") using(Map("a" -> ("a", "b"), "b" -> ("c", "d"), "c" -> ("e", "f")),
+    requestStream handle("c", "d") using(Map("a" -> ("a", "b"), "b" -> ("c", "d"), "c" -> ("e", "f")),
       "---a-----b-----c-----d--e--f---|")
+  }
 
-    // this handles request subscriptions, it's exactly the same as stream but no onComplete
-    requestSubscription handle("a", "b") using("abcdefghijklmnop")
-
-    // this handles channel with an initial payload of ("a", "b")
+  @Test
+  def handleRequestChannel() : Unit = {
     requestChannel handle("a", "b") asFollows(() => {
       val s1 = channelSubscriber()
       respond("---x---")
@@ -110,7 +121,10 @@ The responder DSL example is the dual to the above requester DSL.
       s1 awaitTerminal()
       s1 assertCompleted()
     })
-    end
+  }
+....
+}
+    
 ```
 Here, we write that we want to create requestResponse handlers that handle some initial payload. The optional map argument allows testers to map data and metadata to characters. Under the hood, this is using almost exactly
 the same syntax as the marble diagrams in the rxjs project [here](https://github.com/ReactiveX/rxjs/blob/master/doc/writing-marble-tests.md#marble-syntax). Users can also directly write the marble diagram into the test cases
@@ -121,7 +135,8 @@ to send an initial payload, while handle tells the server to expect an initial p
 at least one additional element than we request.
 
 ## Run Instructions
-This project is managed with sbt. Simply navigate to the root directory with build.sbt and run `sbt assembly`. You can then use `./run <scriptfile>` to run the server or client with a specific script file.
+This project is managed with sbt. Simply navigate to the root directory with build.sbt and run `sbt assembly`. There is currently no way to run this in the command line, but support will come soon.
 
-## TODO
-We need still need to add support for certain types of tests for channel, and find try to write tests so we can idenfity any problems with the TCK
+## Documentation
+Documentation for both the DSL and the script it generates will come soon, as well as suggestions on the process of building a driver for it.
+
