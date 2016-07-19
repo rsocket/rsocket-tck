@@ -14,9 +14,9 @@ This allows implementers of the Reactive Socket protocol to be able to write the
 
 The DSLs are designed to be human readable as well, and should require very little documentation to understand. Here is an example of the client side DSL
 ```
-  object clienttest extends ClientDSL {
+  object clienttest extends RequesterDSL {
   def main(args: Array[String]) {
-    Tests.runTests(this, this.writer)
+    RequesterTests.runTests(this, this.writer)
   }
 
   @Test
@@ -76,9 +76,9 @@ that have already be started.
 ## Responder DSL
 The responder DSL example is the dual to the above requester DSL.
 ```
-object servertest extends MarbleDSL {
+object servertest extends ResponderDSL {
   def main(args: Array[String]) {
-    Tests.runTests(this, this.writer)
+    ResponderTests.runTests(this, this.writer)
   }
 
   @Test
@@ -135,7 +135,9 @@ to send an initial payload, while handle tells the server to expect an initial p
 at least one additional element than we request.
 
 ## Run Instructions
-This project is managed with sbt. Simply navigate to the root directory with build.sbt and run `sbt assembly`. There is currently no way to run this in the command line, but support will come soon.
+This project is managed with sbt. Simply navigate to the root directory with build.sbt and run `sbt assembly`.
+You can generate a script by first creating an object that extends either `RequesterDSL` or `ResponderDSL` (depending on if you want to generate a requester script or a responder script). Then, follow the examples above to start writing your scripts.
+When you want to generate the script, compile again with `sbt assembly` and then use the run script `./run object-name`, where `object-name` is the name of the Scala object containing the tests.
 
 ## Documentation
 Documentation for both the DSL and the script it generates will come soon, as well as suggestions on the process of building a driver for it.

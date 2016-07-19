@@ -1,3 +1,0 @@
-#!/bin/bash
-
-java -cp target/scala-2.11/test_server-assembly-1.0.jar io.reactivesocket.tck.JavaTCPServer $1

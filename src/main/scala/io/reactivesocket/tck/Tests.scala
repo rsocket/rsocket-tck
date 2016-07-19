@@ -17,7 +17,7 @@ import java.io.PrintWriter
 import java.nio.file.Files
 import java.nio.file.Paths
 
-object Tests extends ClientDSL {
+object RequesterTests extends RequesterDSL {
   def runTests(cls : Any, writer: PrintWriter) : Unit = {
     this.writer = writer;
 
@@ -30,6 +30,21 @@ object Tests extends ClientDSL {
       }
     }
     end
-    Files.deleteIfExists(Paths.get("Tests$.txt"))
+    Files.deleteIfExists(Paths.get("RequesterTests$.txt"))
+  }
+}
+
+object ResponderTests extends ResponderDSL {
+  def runTests(cls : Any, writer: PrintWriter) : Unit = {
+    this.writer = writer;
+
+    val methods = cls.getClass.getDeclaredMethods
+    for (method <- methods) {
+      if (method.getDeclaredAnnotations.length > 0 && method.getDeclaredAnnotations()(0).isInstanceOf[Test]) {
+        method.invoke(cls)
+      }
+    }
+    end
+    Files.deleteIfExists(Paths.get("ResponderTests.txt"))
   }
 }

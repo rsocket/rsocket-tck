@@ -1,7 +1,7 @@
 
 import AssemblyKeys._
 
-name := "test_server"
+name := "tck"
 
 version := "1.0"
 
@@ -12,7 +12,6 @@ libraryDependencies += "org.reactivestreams" % "reactive-streams" % "1.0.0"
 libraryDependencies += "com.jcraft" % "jzlib" % "1.1.3"
 libraryDependencies += "io.netty" % "netty-all" % "4.1.0.CR7"
 libraryDependencies += "io.reactivesocket" % "reactivesocket" % "0.1.3"
-libraryDependencies += "io.reactivesocket" % "reactivesocket-transport-tcp" % "0.2.2-SNAPSHOT"
 libraryDependencies += "org.slf4j" % "slf4j-api" % "1.7.12"
 /*libraryDependencies += "io.reactivex" % "rxjava" % "1.1.5"
 libraryDependencies += "io.reactivex" % "rxjava-reactive-streams" % "1.0.1"*/

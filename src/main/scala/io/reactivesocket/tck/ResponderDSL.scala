@@ -17,11 +17,11 @@ import java.io.{File, PrintWriter}
 
 import scala.collection.immutable.Queue
 
-class MarbleDSL {
+class ResponderDSL {
 
   import org.json4s._
-  import org.json4s.native.Serialization._
   import org.json4s.native.Serialization
+  import org.json4s.native.Serialization._
   implicit val formats = Serialization.formats(NoTypeHints)
 
   var writer: PrintWriter = new PrintWriter(new File(this.getClass.getSimpleName + ".txt"))
