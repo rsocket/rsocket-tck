@@ -237,7 +237,29 @@ diagram, and map the value `'x'` to a Payload("hi", "bye"). The unmapped values,
 Payload("y", "y"), but it is up to the driver to decide. The following code is also equivalent. `requestStream handle(a, b)
 using(Map("x" -> ("hi", "bye"), pause(3), emit('x'), pause(2), emit('y'), pause(2), emit('z'), pause(2), complete)`.
 
-#### Channel DSL
+## Channel DSL
 
 As you might imagine, channel tests will have to encompass both requester and responder commands. Channel tests will look like a
 mix of the two.
+
+On the requester side, we define a request to start a channel connection using `requestChannel using(a, b)`. This sets
+the initial payload as (a, b). On the responder side, we define a channel handler using requestChannel handle(a, b). This
+says that if our channel handler gets an initial payload of (a, b), we use this request handler to handle it.
+Then, in the `asFollows` clause, we then define the behavior of the channel using both requester and responder elements.
+
+`val s = channelSubscriber` : this creates a subscriber with the exact same functionality we defined earlier; and uses
+the same syntax
+
+`respond(<marble>)` : this tells the driver to asynchronously respond with the given marble. However, keep in mind that it still may
+not have responded with the marble of previous `respond` calls earlier on in the test. This is because the channel still must
+follow flow control (`request(n)`). Therefore, the driver should asynchronously stage this marble to be sent, and it should
+be sent once all the marbles before this one have been sent as well. The `respond` command must be nonblocking, as in the main test thread
+should not be waiting for the entire marble diagram to be processed. However, `await` calls should be blocking the main
+test thread just like before.
+
+## Driver Tips
+
+Here are some tips on creating and structuring the driver for imperative programming languages.
+
+
+
