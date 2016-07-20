@@ -75,9 +75,7 @@ class DSLTestSubscriber(writer : PrintWriter, initData: String, initMeta: String
 
   def awaitTerminal() : Unit = writer.write("await%%terminal%%" + this.id + "\n")
 
-  def awaitOnNext() : Unit = writer.write("await%%onNext%%" + this.id + "\n")
-
-  def awaitAtLeast(n: Long, t : Long) = writer.write("await%%atLeast%%" + this.id + "%%" + n + "%%" + t + "\n")
+  def awaitAtLeast(n: Long) = writer.write("await%%atLeast%%" + this.id + "%%" + n + "%%" + 100 + "\n")
 
   def awaitNoAdditionalEvents(t: Long) = writer.write("await%%no_events%%" + this.id + "%%" + t + "\n")
 
