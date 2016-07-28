@@ -18,11 +18,6 @@ object clienttest extends RequesterDSL {
     RequesterTests.runTests(this, this.writer)
   }
 
-  /*  @Test
-    def echo() : Unit = {
-      createEchoChannel using("x", "y")
-    }*/
-
   @Test
   def echoTest() : Unit = {
     requestChannel using("e", "f") asFollows(() => {
@@ -68,7 +63,7 @@ object clienttest extends RequesterDSL {
     s1 assertCompleted()
   }
 
-  @Test
+  @Test(pass = false)
   def requestresponseFail() : Unit = {
     val s1 = requestResponse("c", "d")
     s1 request 1
@@ -139,7 +134,7 @@ object clienttest extends RequesterDSL {
     })
   }
 
-  @Test
+  @Test(pass = false)
   def streamTestFail() : Unit = {
     val s2 = requestStream("c", "d")
     s2 request 2
@@ -166,7 +161,7 @@ object clienttest extends RequesterDSL {
     s2 assertNoErrors()
     s2 assertNotCompleted()
     s2 request 1
-    s2 awaitAtLeast (1)
+    s2 awaitAtLeast (2)
     s2 assertReceived List(("a", "b"), ("c", "d"))
     s1 take 7 // 7 total
     s1 assertReceivedAtLeast 7
