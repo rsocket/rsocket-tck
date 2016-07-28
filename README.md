@@ -160,6 +160,16 @@ However, there are actually two DSLs, a requester and responder one that differ 
 with initial payload with data = "a" and metadata = "b". We can also create a fire-and-forget subscriber as well. If we use
 an IDE like Intellij to write these tests, the autocomplete feature should be very helpful. Also, we say "tell the driver" for now,
 but we will go into detail later on exactly how a driver would be able to parse this command.
+The tests we write will have the following general format
+```scala
+@Test(pass = fail)
+def testName() : Unit = {
+  // test logic
+}
+```
+Note that that `(pass = fail)` part of the test header is optional. This line is for asserting the outcome of the test,
+as there are some situations that users would want to write tests that will fail. The default behavior is `(pass = true)`
+so for most tests that assert correct behavior, this part of the annotation is not needed.
 
 ##### Request Commands
 
@@ -331,4 +341,70 @@ as the channel only has one subscriber.
 
 ### Driver Tips
 
-Here are some tips on how to structure drivers.
+Here are some tips on how to structure drivers from the viewpoint of building the Java driver.
+
+#### Test Subscriber
+
+Having a Test Subscriber is essential to creating the driver. A Test Subscriber is one that implements the Subscriber
+interface in Reactive Streams, but also has additional functionality to keep track of values it has received and to perform
+the awaits and assertions that are mentioned above and contained in the TCK. Building the Test Subscriber may require
+some basic async structures such as CountDownLatch, but should be fairly straightforward to build.
+
+#### Client Driver
+
+The structure of the Java client driver is to have one central "driver" class that takes in a method pointer that allows it
+to construct ReactiveSockets. Then, it does a quick initial parse through the file and separates the tests out into their
+own collections. Then, it goes through each of the connections and calls a "parse" method that goes through each line of the
+test and enacts the necessary behavior, most of which involve calling the Test Subscriber to do something. It may be useful
+to have each test in a separate thread so that the failure of one test doesn't affect the others.
+
+#### Server Driver
+
+The structure of the Java server driver is to also have a central driver class. In the Java implementation, the ReactiveSocket
+server uses a structure called a RequestHandler that determines behavior upon triggering one of the request types of
+ReactiveSocket. The server driver parses through the file to build up the request handler; note that it does it in a way
+such that the behavior will be determined at runtime, such as using hashmaps to determine behavior based on the initial payload.
+
+#### Channel Handler
+
+Most of the driver is straightforward, but the part that handles channel behavior is somewhat more complicated. On the client side,
+upon the main driver reaching the channel block, it should immediately collect all lines inside the block and execute the channel
+test inside. Since the channel test syntax is not quite the same as the main test syntax, it would be useful to have a separate
+class/function to parse through the channel tests. Since the IO should not block the main test thread and that flow control should be respected, it is imperative that
+the implementer be able to implement a basic marble parser with a backpressure buffer. If one side has more items to emit than the
+other side requests, the former should wait until the latter has made a request, and then immediately try to fulfill that request.
+Conversely, if one side has requested more items than the other side has to emit, once the latter side has more items to emit,
+it should immediately emit them to the former side. Thankfully, this can be done without any fancy Rx code, and the general structure
+may look like the following
+```scala
+class ParseMarble {
+
+  def synchronous add(marble : String) : Unit = {
+    // remove '-' characters and add to some global queue or list
+    // if additional marble stuff to send, unblock parselatch
+  }
+
+  def synchronous request(n : Long) : Unit = {
+    // update total request
+    // if greater than 0, unblock sendlatch
+  }
+
+  def parse() : Unit = {
+    while (true) {
+        if (no more data to send) {
+          //parselatch await
+        }
+        // send non-emmitable data like onComplete and onError
+        if (cannot emit more items because not enough request) {
+          //sendlatch await
+        }
+    }
+  }
+
+}
+```
+
+If one decides to go this route in implementing the driver, the `add()` method should be called using a thread that isn't waited on
+in order to make the IO async from the rest of the test thread, and each
+thread should make sure the previous thread that is calling add has finished before calling add itself so that marble
+order does not get mixed up.
