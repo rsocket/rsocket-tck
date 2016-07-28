@@ -26,8 +26,8 @@ object RequesterTests extends RequesterDSL {
       if (method.getDeclaredAnnotations.length > 0 && method.getDeclaredAnnotations()(0).isInstanceOf[Test]) {
         val test : Test = method.getDeclaredAnnotations()(0).asInstanceOf[Test]
         begintest()
-        if (test.pass()) pass else fail
         nametest(method.getName)
+        if (test.pass()) pass else fail
         method.invoke(cls)
       }
     }
