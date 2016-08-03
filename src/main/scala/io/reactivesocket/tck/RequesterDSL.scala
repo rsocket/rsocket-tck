@@ -75,4 +75,8 @@ class RequesterDSL {
     writer.write("respond%%" + marble + "\n")
   }
 
+  def pass() : Unit = writer.write("pass\n")
+
+  def fail() : Unit = writer.write("fail\n")
+
 }
