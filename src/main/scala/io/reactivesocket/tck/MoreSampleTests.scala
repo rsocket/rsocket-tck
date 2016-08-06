@@ -219,7 +219,7 @@ object client extends RequesterDSL {
   def requestSubscriptionError() : Unit = {
     val s = requestSubscription("g", "h")
     s request 100
-    s awaitTerminal()
+    s.awaitTerminal // do this change
     s assertNotCompleted()
     s assertError()
     s assertReceivedCount 0
