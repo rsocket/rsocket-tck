@@ -63,8 +63,6 @@ class DSLTestSubscriber(writer : PrintWriter, initData: String, initMeta: String
 
   def assertReceivedAtLeast(n: Long) : Unit = writer.write("assert%%received_at_least%%" + this.id + "%%" + n + "\n")
 
-  def assertNoValues() : Unit = writer.write("assert%%no_values%%" + this.id + "\n")
-
   def assertCompleted() : Unit = writer.write("assert%%completed%%" + this.id + "\n")
 
   def assertNotCompleted() : Unit = writer.write("assert%%no_completed%%" + this.id + "\n")
@@ -75,9 +73,7 @@ class DSLTestSubscriber(writer : PrintWriter, initData: String, initMeta: String
 
   def awaitTerminal() : Unit = writer.write("await%%terminal%%" + this.id + "\n")
 
-  def awaitOnNext() : Unit = writer.write("await%%onNext%%" + this.id + "\n")
-
-  def awaitAtLeast(n: Long, t : Long) = writer.write("await%%atLeast%%" + this.id + "%%" + n + "%%" + t + "\n")
+  def awaitAtLeast(n: Long) = writer.write("await%%atLeast%%" + this.id + "%%" + n + "%%" + 100 + "\n")
 
   def awaitNoAdditionalEvents(t: Long) = writer.write("await%%no_events%%" + this.id + "%%" + t + "\n")
 
@@ -86,8 +82,4 @@ class DSLTestSubscriber(writer : PrintWriter, initData: String, initMeta: String
   // internal functions
 
   private def printList(lst: List[(String, String)]) : String = lst.map(a => a._1 + "," + a._2).mkString("&&")
-
-  private def writechannel(marble: Map[(String, String), String]) : String = {
-    marble.keys.map(a => a._1 + "@" + a._2 + ":" + marble.get(a).get).mkString(",")
-  }
 }
