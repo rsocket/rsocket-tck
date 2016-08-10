@@ -8,7 +8,7 @@ object client extends RequesterDSL {
 
   // RequestResponse tests
 
- /* @Test
+  @Test
   def requestResponsePass() : Unit = {
     val s = requestResponse("a", "b")
     s request 1
@@ -328,7 +328,6 @@ object client extends RequesterDSL {
     s assertNoErrors()
     s assertCompleted()
   }
-*/
   // channel tests
 
   @Test
@@ -430,6 +429,77 @@ object client extends RequesterDSL {
     })
   }
 
+  @Test
+  def requestChannelNoResponseVsMulti() : Unit = {
+    requestChannel using("s", "t") asFollows(() => {
+      val s = channelSubscriber()
+      s request 3
+      s awaitAtLeast 3
+      s awaitTerminal()
+      s assertCompleted()
+      s assertNoErrors()
+    })
+  }
+
+  @Test
+  def requestChannelNoResponseVsError() : Unit = {
+    requestChannel using("u", "v") asFollows(() => {
+      val s = channelSubscriber()
+      s request 2
+      s awaitTerminal()
+      s assertNotCompleted()
+      s assertError()
+    })
+  }
+
+  @Test(pass = false)
+  def requestChannelNoResponseVsNoResponse() : Unit = {
+    requestChannel using("w", "x") asFollows(() => {
+      val s = channelSubscriber()
+      s request 1
+      s awaitAtLeast 1
+    })
+  }
+
+  @Test
+  def requestChannelErrorVsSingle() : Unit = {
+    requestChannel using("y", "z") asFollows(() => {
+      val s = channelSubscriber()
+      s request 1
+      s awaitTerminal()
+      s assertReceivedCount 1
+      s assertCompleted()
+      s assertNoErrors()
+      respond("a-#")
+    })
+  }
+
+  @Test
+  def requestChannelErrorVsMulti() : Unit = {
+    requestChannel using("aa", "bb") asFollows(() => {
+      val s = channelSubscriber()
+      s request 3
+      s awaitTerminal()
+      s assertReceivedCount 3
+      s assertCompleted()
+      s assertNoErrors()
+      respond("#")
+    })
+  }
+
+  @Test
+  def requestChannelErrorVsError() : Unit = {
+    requestChannel using("cc", "dd") asFollows(() => {
+      val s = channelSubscriber()
+      s request 1
+      respond("#")
+      s awaitTerminal()
+      s assertError()
+      s assertNotCompleted()
+      s assertReceivedCount 0
+    })
+  }
+
 
   @Test
   def requestChannelInterleaveRequestResponse() : Unit = {
@@ -442,6 +512,42 @@ object client extends RequesterDSL {
       s request 2
       respond("c|")
       s awaitAtLeast 3
+      s awaitTerminal()
+      s assertCompleted()
+      s assertNoErrors()
+    })
+  }
+
+  @Test
+  def requestChannelCancel() : Unit = {
+    requestChannel using("ee", "ff") asFollows(() => {
+      val s = channelSubscriber()
+      s request 1
+      respond("a-b-c-d-e")
+      s awaitAtLeast 1
+      s cancel()
+      s assertCanceled()
+    })
+  }
+
+  @Test
+  def requestChannelCancel2() : Unit = {
+    requestChannel using("gg", "hh") asFollows(() => {
+      val s = channelSubscriber()
+      s request 1
+      respond("a-b-c-|")
+      s awaitAtLeast 1
+      s cancel()
+      s assertCanceled()
+    })
+  }
+
+  @Test
+  def requestChannelCancel3() : Unit = {
+    requestChannel using("ii", "jj") asFollows(() => {
+      val s = channelSubscriber()
+      s request 3
+      respond("a-b-c-d-e")
       s awaitTerminal()
       s assertCompleted()
       s assertNoErrors()
@@ -610,6 +716,107 @@ object server extends ResponderDSL {
       respond("a-|")
       s request 1
       s awaitAtLeast 2
+    })
+  }
+
+  @Test
+  def requestChannelNoResponseVsMulti() : Unit = {
+    requestChannel handle("s", "t") shouldFail() asFollows(() => {
+      val s = channelSubscriber()
+      respond("a-b-c-|")
+      s request 1
+      s awaitAtLeast 2
+    })
+  }
+
+  @Test
+  def requestChannelNoResponseVsError() : Unit = {
+    requestChannel handle("u", "v") shouldFail() asFollows(() => {
+      val s = channelSubscriber()
+      respond("a-b-#")
+      s request 1
+      s awaitAtLeast 2
+    })
+  }
+
+  @Test
+  def requestChannelNoResponseVsNoResponse() : Unit = {
+    requestChannel handle("w", "x") shouldFail() asFollows(() => {
+      val s = channelSubscriber()
+      s request 1
+      s awaitAtLeast 2
+    })
+  }
+
+  @Test
+  def requestChannelErrorVsSingle() : Unit = {
+    requestChannel handle("y", "z") asFollows(() => {
+      val s = channelSubscriber()
+      s request 1
+      respond("a-|")
+      s awaitTerminal()
+      s assertError()
+      s assertNotCompleted()
+    })
+  }
+
+  @Test
+  def requestChannelErrorVsMulti() : Unit = {
+    requestChannel handle("aa", "bb") asFollows(() => {
+      val s = channelSubscriber()
+      s request 1
+      respond("a-b-c-|")
+      s awaitTerminal()
+      s assertError()
+      s assertNotCompleted()
+    })
+  }
+
+  @Test
+  def requestChannelErrorVsError() : Unit = {
+    requestChannel handle("cc", "dd") asFollows(() => {
+      val s = channelSubscriber()
+      s request 1
+      respond("#")
+      s awaitTerminal()
+      s assertError()
+      s assertNotCompleted()
+    })
+  }
+
+  @Test
+  def requestChannelCancel() : Unit = {
+    requestChannel handle("ee", "ff") asFollows(() => {
+      val s = channelSubscriber()
+      s request 1
+      respond("a-b-c-d-e")
+      s awaitAtLeast 1
+      s cancel()
+      s assertCanceled()
+    })
+  }
+
+  @Test
+  def requestChannelCancel2() : Unit = {
+    requestChannel handle("gg", "hh") asFollows(() => {
+      val s = channelSubscriber()
+      s request 3
+      respond("a-b-c-|")
+      s awaitAtLeast 4
+      s awaitTerminal()
+      s assertCompleted()
+      s assertNoErrors()
+    })
+  }
+
+  @Test
+  def requestChannelCancel3() : Unit = {
+    requestChannel handle("ii", "jj") asFollows(() => {
+      val s = channelSubscriber()
+      s request 3
+      respond("a-b-c-|")
+      s cancel()
+      s assertCanceled()
     })
   }
 
