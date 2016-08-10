@@ -37,6 +37,7 @@ class ResponderDSL {
 
 
   trait ChannelHandler {
+    def shouldFail() : ChannelHandler
     def handle(data: String, meta: String) : ChannelHandler
     def asFollows(f: () => Unit): Unit
   }
@@ -100,6 +101,12 @@ class ResponderDSL {
   }
 
   object requestChannel extends ChannelHandler {
+
+    override def shouldFail(): ChannelHandler = {
+      writer.write("fail%%")
+      this
+    }
+
     override def handle(data: String, meta: String) : ChannelHandler = {
       writer.write("channel%%" + data + "%%" + meta + "%%")
       this

@@ -8,7 +8,7 @@ object client extends RequesterDSL {
 
   // RequestResponse tests
 
-  @Test
+ /* @Test
   def requestResponsePass() : Unit = {
     val s = requestResponse("a", "b")
     s request 1
@@ -219,7 +219,7 @@ object client extends RequesterDSL {
   def requestSubscriptionError() : Unit = {
     val s = requestSubscription("g", "h")
     s request 100
-    s awaitTerminal()
+    s.awaitTerminal // do this change
     s assertNotCompleted()
     s assertError()
     s assertReceivedCount 0
@@ -328,7 +328,7 @@ object client extends RequesterDSL {
     s assertNoErrors()
     s assertCompleted()
   }
-
+*/
   // channel tests
 
   @Test
@@ -346,19 +346,6 @@ object client extends RequesterDSL {
     })
   }
 
-  @Test
-  def requestChannelSingleVsMulti() : Unit = {
-    requestChannel using("c", "d") asFollows(() => {
-      val s = channelSubscriber()
-      respond("a-b-c-|")
-      s request 1
-      s awaitAtLeast 1
-      s assertReceivedCount 1
-      s awaitTerminal()
-      s assertCompleted()
-      s assertNoErrors()
-    })
-  }
 
   @Test(pass = false)
   def requestChannelSingleVsNoResponse() : Unit = {
@@ -380,6 +367,69 @@ object client extends RequesterDSL {
       s assertError()
     })
   }
+
+  @Test
+  def requestChannelMultiVsSingle() : Unit = {
+    requestChannel using("c", "d") asFollows(() => {
+      val s = channelSubscriber()
+      respond("a-b-c-|")
+      s request 1
+      s awaitAtLeast 1
+      s assertReceivedCount 1
+      s awaitTerminal()
+      s assertCompleted()
+      s assertNoErrors()
+    })
+  }
+
+  @Test
+  def requestChannelMultiVsMulti() : Unit = {
+    requestChannel using("k", "l") asFollows(() => {
+      val s = channelSubscriber()
+      respond("a-b-c-|")
+      s request 3
+      s awaitAtLeast 3
+      s awaitTerminal()
+      s assertReceivedAtLeast 3
+      s assertCompleted()
+      s assertNoErrors()
+    })
+  }
+
+  @Test(pass = false)
+  def requestChannelMultiVsNoResponse() : Unit = {
+    requestChannel using("m", "n") asFollows(() => {
+      val s = channelSubscriber()
+      respond("a-b-c-d-|")
+      s request 10
+      s awaitAtLeast 10
+    })
+  }
+
+  @Test
+  def requestChannelMultiVsError() : Unit = {
+    requestChannel using("o", "p") asFollows(() => {
+      val s = channelSubscriber()
+      respond("a-b-c-d-e-|")
+      s request 1
+      s awaitTerminal()
+      s assertNotCompleted()
+      s assertError()
+    })
+  }
+
+  @Test
+  def requestChannelNoResponseVsSingle() : Unit = {
+    requestChannel using("q", "r") asFollows(() => {
+      val s = channelSubscriber()
+      s request 1
+      s awaitTerminal()
+      s assertReceivedCount 1
+      s assertCompleted()
+      s assertNoErrors()
+    })
+  }
+
 
   @Test
   def requestChannelInterleaveRequestResponse() : Unit = {
@@ -515,5 +565,52 @@ object server extends ResponderDSL {
     })
   }
 
+  @Test
+  def requestChannelMultiVsMulti() : Unit = {
+    requestChannel handle("k", "l") asFollows(() => {
+      val s = channelSubscriber()
+      respond("x-y-z-|")
+      s request 3
+      s awaitTerminal()
+      s assertCompleted()
+      s assertReceivedCount 4
+      s assertNoErrors()
+    })
+  }
+
+  @Test
+  def requestChannelMultiVsNoResponse() : Unit = {
+    requestChannel handle("m", "n") asFollows(() => {
+      val s = channelSubscriber()
+      s request 4
+      s awaitTerminal()
+      s assertReceivedCount 5
+      s assertCompleted()
+      s assertNoErrors()
+    })
+  }
+
+  @Test
+  def requestChannelMultiVsError() : Unit = {
+    requestChannel handle("o", "p") asFollows(() => {
+      val s = channelSubscriber()
+      s request 5
+      s awaitTerminal()
+      s assertCompleted()
+      s assertReceivedCount 6
+      s assertNoErrors()
+      respond("#")
+    })
+  }
+
+  @Test
+  def requestChannelNoResponseVsSingle() : Unit = {
+    requestChannel handle("q", "r") shouldFail() asFollows(() => { // this marks the test as should fail
+      val s = channelSubscriber()
+      respond("a-|")
+      s request 1
+      s awaitAtLeast 2
+    })
+  }
 
 }

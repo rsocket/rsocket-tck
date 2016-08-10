@@ -254,7 +254,9 @@ mix of the two.
 
 On the requester side, we define a request to start a channel connection using `requestChannel using(a, b)`. This sets
 the initial payload as (a, b). On the responder side, we define a channel handler using requestChannel handle(a, b). This
-says that if our channel handler gets an initial payload of (a, b), we use this request handler to handle it.
+says that if our channel handler gets an initial payload of (a, b), we use this request handler to handle it. The server side DSL
+allow allows the user to specify that the channel test SHOULD fail (if we're testing negative behavior such as a timeout), and this
+can be done by using `requestChannel handle(a, b) shouldFail() asFollows(() => { ...`.
 Then, in the `asFollows` clause, we then define the behavior of the channel using both requester and responder elements.
 
 `val s = channelSubscriber` : this creates a subscriber with the exact same functionality we defined earlier; and uses
@@ -332,7 +334,14 @@ channel%%a%%b%%{
 ```
 This should tell the driver that enclosed is everything with the channel behavior. On the client side, the client should
 send a channel request with the initial payload `(a, b)`, and on the server side, if the channel handler receives a request
-with initial payload `(a, b)`, it should execute the behavior enclosed. Now, we look at the lines that are inside.
+with initial payload `(a, b)`, it should execute the behavior enclosed. Now, we look at the lines that are inside. On the server side however,
+this channel script can also look like
+```
+channel%%a%%b%%fail%%{
+...
+}
+```
+This just tells the server that this channel test is expected to fail.
 
 `respond%%<marble>` : This should tell the driver to asynchronously stage the marble string to be sent.
 
