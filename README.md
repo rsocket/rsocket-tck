@@ -418,10 +418,3 @@ in order to make the IO async from the rest of the test thread, and each
 thread should make sure the previous thread that is calling add has finished before calling add itself so that marble
 order does not get mixed up.
 
-## Future Work
-
-Of the bugs that the TCK has found so far, all were edge cases that would have been hard to identify during "normal" usage of ReactiveSockets
-because they include events in strange orders that might rarely happen during normal usage. One way to be able to more quickly find these
-bugs would be to implement fuzzing at the application level. In this case, we would generate events in a random order and assert on the result.
-In order to do the assertions correctly however, this would require us to generate some sort of state graph and do a random traversal on it,
-and keep track of the state we end on, so we can assert that the behavior indeed matches what we expect on that state.
