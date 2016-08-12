@@ -554,6 +554,134 @@ object client extends RequesterDSL {
     })
   }
 
+  @Test
+  def requestResponseMultipleSuccesssion() = {
+    val s1 = requestResponse("aa", "bb")
+    val s2 = requestResponse("aa", "bb")
+    val s3 = requestResponse("aa", "bb")
+    val s4 = requestResponse("aa", "bb")
+    s1 request 1
+    s2 request 1
+    s3 request 1
+    s4 request 1
+    s1 awaitAtLeast 1
+    s2 awaitAtLeast 1
+    s3 awaitAtLeast 1
+    s4 awaitAtLeast 1
+  }
+
+  @Test
+  def requestStreamMultipleSuccession() = {
+    val s1 = requestStream("aa", "bb")
+    val s2 = requestStream("aa", "bb")
+    val s3 = requestStream("aa", "bb")
+    val s4 = requestStream("aa", "bb")
+    s1 request 1
+    s2 request 1
+    s3 request 1
+    s4 request 1
+    s1 awaitAtLeast 1
+    s2 awaitAtLeast 1
+    s3 awaitAtLeast 1
+    s4 awaitAtLeast 1
+  }
+
+  @Test
+  def requestSubscriptionMultileSuccession() = {
+    val s1 = requestSubscription("aa", "bb")
+    val s2 = requestSubscription("aa", "bb")
+    val s3 = requestSubscription("aa", "bb")
+    val s4 = requestSubscription("aa", "bb")
+    s1 request 1
+    s2 request 1
+    s3 request 1
+    s4 request 1
+    s1 awaitAtLeast 1
+    s2 awaitAtLeast 1
+    s3 awaitAtLeast 1
+    s4 awaitAtLeast 1
+  }
+
+  @Test
+  def requestChannelMultipleSuccession() = {
+    requestChannel using("xx", "yy") asFollows(() => {
+      val s = channelSubscriber()
+      s request 1
+      s awaitAtLeast 1
+    })
+    requestChannel using("xx", "yy") asFollows(() => {
+      val s = channelSubscriber()
+      s request 1
+      s awaitAtLeast 1
+    })
+    requestChannel using("xx", "yy") asFollows(() => {
+      val s = channelSubscriber()
+      s request 1
+      s awaitAtLeast 1
+    })
+    requestChannel using("xx", "yy") asFollows(() => {
+      val s = channelSubscriber()
+      s request 1
+      s awaitAtLeast 1
+    })
+  }
+
+  @Test(pass = false)
+  def requestResponseRequestAfterCancel(): Unit = {
+    val s = requestResponse("request", "cancel")
+    s cancel()
+    s request 1
+    s awaitAtLeast 1
+    s assertReceivedCount 1
+  }
+
+  @Test
+  def requestResponseMultipleCancel() : Unit = {
+    val s1 = requestResponse("aa", "bb")
+    val s2 = requestResponse("aa", "bb")
+    val s3 = requestResponse("aa", "bb")
+    val s4 = requestResponse("aa", "bb")
+    s1 request 1
+    s2 request 1
+    s3 request 1
+    s4 request 1
+    s1 cancel()
+    s2 cancel()
+    s3 cancel()
+    s4 cancel()
+  }
+
+  @Test
+  def requestStreamMultipleCancel() : Unit = {
+    val s1 = requestStream("aa", "bb")
+    val s2 = requestStream("aa", "bb")
+    val s3 = requestStream("aa", "bb")
+    val s4 = requestStream("aa", "bb")
+    s1 request 1
+    s2 request 1
+    s3 request 1
+    s4 request 1
+    s1 cancel()
+    s2 cancel()
+    s3 cancel()
+    s4 cancel()
+  }
+
+  @Test
+  def requestSubscriptionMultipleCancel() : Unit = {
+    val s1 = requestSubscription("aa", "bb")
+    val s2 = requestSubscription("aa", "bb")
+    val s3 = requestSubscription("aa", "bb")
+    val s4 = requestSubscription("aa", "bb")
+    s1 request 1
+    s2 request 1
+    s3 request 1
+    s4 request 1
+    s1 cancel()
+    s2 cancel()
+    s3 cancel()
+    s4 cancel()
+  }
 
 }
 
@@ -571,6 +699,8 @@ object server extends ResponderDSL {
     requestResponse handle("i", "j") using (Map("x" -> ("homer", "simpson")), "x-|")
     requestResponse handle("k", "l") using (Map("y" -> ("bart", "simpson")), "y-|")
     requestResponse handle("m", "n") using (Map("z" -> ("seymour", "skinner")), "z-|")
+    requestResponse handle("aa", "bb") using("a-|")
+    requestResponse handle("request", "cancel") using("a-|")
   }
 
   @Test
@@ -584,6 +714,7 @@ object server extends ResponderDSL {
     requestStream handle("m", "n") using("a-b-c-d-|")
     requestStream handle("o", "p") using("a-b-|")
     requestStream handle("q", "r") using("a-b-c--d-#")
+    requestStream handle("aa", "bb") using("a-b-c-d-|")
   }
 
   @Test
@@ -598,6 +729,7 @@ object server extends ResponderDSL {
     requestSubscription handle("o", "p") using("a-b-")
     requestSubscription handle("q", "r") using("a-b-c--d-#")
     requestSubscription handle("s", "t") using("a-b-#")
+    requestSubscription handle("aa", "bb") using("a-b-c-d-|")
   }
 
   @Test
@@ -817,6 +949,13 @@ object server extends ResponderDSL {
       respond("a-b-c-|")
       s cancel()
       s assertCanceled()
+    })
+  }
+
+  @Test
+  def requestChannelMultipleSuccession() : Unit = {
+    requestChannel handle("xx", "yy") asFollows(() => {
+      respond("a-b-c-|")
     })
   }
 
