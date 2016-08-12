@@ -555,7 +555,7 @@ object client extends RequesterDSL {
   }
 
   @Test
-  def requestResponseMultipleSuccesssion() = {
+  def requestResponseMultipleSuccession() = {
     val s1 = requestResponse("aa", "bb")
     val s2 = requestResponse("aa", "bb")
     val s3 = requestResponse("aa", "bb")
@@ -587,7 +587,7 @@ object client extends RequesterDSL {
   }
 
   @Test
-  def requestSubscriptionMultileSuccession() = {
+  def requestSubscriptionMultipleSuccession() = {
     val s1 = requestSubscription("aa", "bb")
     val s2 = requestSubscription("aa", "bb")
     val s3 = requestSubscription("aa", "bb")
