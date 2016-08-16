@@ -20,7 +20,6 @@ libraryDependencies += "io.reactivex" % "rxjava-reactive-streams" % "1.0.1"*/
 libraryDependencies += "io.reactivex" % "rxjava-reactive-streams" % "1.1.0"
 libraryDependencies += "io.reactivex.rxjava2" % "rxjava" % "2.0.0-DP0-SNAPSHOT"
 libraryDependencies += "org.apache.commons" % "commons-lang3" % "3.4"
-libraryDependencies += "io.reactivesocket" % "reactivesocket-netty" % "0.1.9-SNAPSHOT" // wait for release
 libraryDependencies += "org.json4s" %% "json4s-native" % "3.3.0"
 libraryDependencies += "com.fasterxml.jackson.core" % "jackson-core" % "2.8.0.rc2"
 libraryDependencies += "com.fasterxml.jackson.core" % "jackson-databind" % "2.8.0.rc2"

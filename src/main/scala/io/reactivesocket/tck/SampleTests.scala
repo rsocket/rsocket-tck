@@ -15,7 +15,7 @@ package io.reactivesocket.tck
 
 object clienttest extends RequesterDSL {
   def main(args: Array[String]) {
-    RequesterTests.runTests(this, this.writer)
+    RequesterReflection.runTests(this, this.writer)
   }
 
   @Test
@@ -175,7 +175,7 @@ object clienttest extends RequesterDSL {
 
 object servertest extends ResponderDSL {
   def main(args: Array[String]) {
-    ResponderTests.runTests(this, this.writer)
+    ResponderReflection.runTests(this, this.writer)
   }
 
   @Test

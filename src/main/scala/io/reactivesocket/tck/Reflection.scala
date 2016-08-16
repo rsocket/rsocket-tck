@@ -17,7 +17,7 @@ import java.io.PrintWriter
 import java.nio.file.Files
 import java.nio.file.Paths
 
-object RequesterTests extends RequesterDSL {
+object RequesterReflection extends RequesterDSL {
   def runTests(cls : Any, writer: PrintWriter) : Unit = {
     this.writer = writer;
 
@@ -32,11 +32,11 @@ object RequesterTests extends RequesterDSL {
       }
     }
     end
-    Files.deleteIfExists(Paths.get("RequesterTests$.txt"))
+    Files.deleteIfExists(Paths.get("RequesterReflection.txt"))
   }
 }
 
-object ResponderTests extends ResponderDSL {
+object ResponderReflection extends ResponderDSL {
   def runTests(cls : Any, writer: PrintWriter) : Unit = {
     this.writer = writer;
 
@@ -47,6 +47,6 @@ object ResponderTests extends ResponderDSL {
       }
     }
     end
-    Files.deleteIfExists(Paths.get("ResponderTests$.txt"))
+    Files.deleteIfExists(Paths.get("ResponderReflection.txt"))
   }
 }
