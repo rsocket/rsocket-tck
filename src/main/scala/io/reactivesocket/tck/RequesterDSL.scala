@@ -17,7 +17,11 @@ import java.io.{File, PrintWriter}
 
 class RequesterDSL {
 
-  var writer: PrintWriter = new PrintWriter(new File(this.getClass.getSimpleName + ".txt"))
+  val filename = this.getClass.getSimpleName.reverse.substring(1).reverse + ".txt"
+
+  if (!filename.equals("RequesterReflection.txt")) println("writing to " + filename)
+
+  var writer: PrintWriter = new PrintWriter(new File(filename))
 
   def requestResponse(data: String, metadata: String) : DSLTestSubscriber =
     new DSLTestSubscriber(writer, data, metadata, "rr")
@@ -32,7 +36,6 @@ class RequesterDSL {
     new DSLTestSubscriber(writer, data, metadata, "sub")
 
   def end() : Unit = {
-    println("ended")
     writer.write("EOF\n")
     writer.close()
   }

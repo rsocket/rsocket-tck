@@ -3,12 +3,12 @@ package io.reactivesocket.tck
 object client extends RequesterDSL {
 
   def main(args: Array[String]): Unit = {
-    RequesterTests.runTests(this, this.writer)
+    RequesterReflection.runTests(this, this.writer)
   }
 
   // RequestResponse tests
 
-  @Test
+  /*@Test
   def requestResponsePass() : Unit = {
     val s = requestResponse("a", "b")
     s request 1
@@ -681,13 +681,58 @@ object client extends RequesterDSL {
     s2 cancel()
     s3 cancel()
     s4 cancel()
+  }*/
+
+  @Test(pass = false)
+  def requestStreamAfterCancel() : Unit = {
+    val s = requestStream("after", "cancel")
+    s request 1
+    s awaitAtLeast 1
+    s assertReceivedCount 1
+    s cancel()
+    s assertCanceled()
+    s request 1
+    s awaitAtLeast 1 // should timeout
+  }
+
+  @Test(pass = false)
+  def requestSubscriptionAfterCancel() : Unit = {
+    val s = requestSubscription("after", "cancel")
+    s request 2
+    s awaitAtLeast 2
+    s assertReceivedCount 2
+    s cancel()
+    s assertCanceled()
+    s request 1
+    s awaitAtLeast 1 // should timeout
+  }
+
+  @Test(pass = false)
+  def requestChannelAfterCancel() : Unit = {
+    requestChannel using("after", "cancel") asFollows(() => {
+      val s = channelSubscriber()
+      s request 1
+      respond("a-b-c-d-e")
+      s awaitAtLeast 1
+      s assertReceivedCount 1
+      s cancel()
+      s request 1
+      s awaitAtLeast 1 // should timeout
+    })
+  }
+
+  @Test
+  def requestChannelAfterCancel2() : Unit = {
+    val s = channelSubscriber()
+    s request 1
+    s awaitAtLeast 1
   }
 
 }
 
 object server extends ResponderDSL {
   def main(args: Array[String]): Unit = {
-    ResponderTests.runTests(this, this.writer)
+    ResponderReflection.runTests(this, this.writer)
   }
 
   @Test
@@ -715,6 +760,7 @@ object server extends ResponderDSL {
     requestStream handle("o", "p") using("a-b-|")
     requestStream handle("q", "r") using("a-b-c--d-#")
     requestStream handle("aa", "bb") using("a-b-c-d-|")
+    requestStream handle("after", "cancel") using("a-b-c-d-e-|")
   }
 
   @Test
@@ -730,6 +776,7 @@ object server extends ResponderDSL {
     requestSubscription handle("q", "r") using("a-b-c--d-#")
     requestSubscription handle("s", "t") using("a-b-#")
     requestSubscription handle("aa", "bb") using("a-b-c-d-|")
+    requestSubscription handle("after", "cancel") using("a-b-c-d-e-|")
   }
 
   @Test
@@ -956,6 +1003,28 @@ object server extends ResponderDSL {
   def requestChannelMultipleSuccession() : Unit = {
     requestChannel handle("xx", "yy") asFollows(() => {
       respond("a-b-c-|")
+    })
+  }
+
+  @Test
+  def requestChannelAfterCancel() : Unit = {
+    requestChannel handle("after", "cancel") asFollows(() => {
+      val s = channelSubscriber()
+      s request 1
+      respond("a-b-c-d-e-f")
+      s awaitAtLeast 2
+      s assertReceivedCount 2
+    })
+  }
+
+  @Test
+  def requestChannelAfterCancelServer() : Unit = {
+    requestChannel handle("after", "cancel2") shouldFail() asFollows(() => {
+      val s = channelSubscriber()
+      s cancel()
+      s request 1
+      respond("a-b-c-d")
+      s awaitAtLeast 2 // should timeout
     })
   }
 

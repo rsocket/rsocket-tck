@@ -23,8 +23,9 @@ class ResponderDSL {
   import org.json4s.native.Serialization
   import org.json4s.native.Serialization._
   implicit val formats = Serialization.formats(NoTypeHints)
-
-  var writer: PrintWriter = new PrintWriter(new File(this.getClass.getSimpleName + ".txt"))
+  val filename = this.getClass.getSimpleName.reverse.substring(1).reverse + ".txt"
+  if (!filename.equals("ResponderReflection.txt")) println("writing to " + filename)
+  var writer: PrintWriter = new PrintWriter(new File(filename))
 
   trait Handler {
     def handle(data: String, meta: String) : Handler
@@ -187,7 +188,6 @@ class ResponderDSL {
 
 
   def end() : Unit = {
-    println("ended")
     writer.close()
   }
 

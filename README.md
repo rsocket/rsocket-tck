@@ -71,6 +71,17 @@ Notice that the test for channel incorporates both server and client behavior. Y
 tests. So for example, calling `respond(...)` and then `request ...` will not block the request if the client can't respond, but calling `await ...` will block anything after it, but not respond requests
 that have already be started.
 
+## QuickStart Instructions
+There are two sets of premade tests in this project. They are in the files `ReactiveSocketCoreTests.scala` and `SampleTests.scala`.
+To generate the script files for the `SampleTests.scala` set of tests, first compile the project with `sbt assembly` and then to generate
+the script run `./run.sh clienttest` and `./run.sh servertest`. This should generate the script files in the current directory.
+These files will be needed in order to run the driver. The Java driver can be found [here](https://github.com/ReactiveSocket/reactivesocket-java/tree/master/reactivesocket-tck-drivers).
+
+For a quickstart guide on how to write tests, one can basically copy and extend the existing tests in the project. The server side
+knows how to behave in response to a request on the client side from the initial payload, so when writing tests, make sure that
+for ever client test that is `using(a, b)` for some request type `r`, there is a server handler that is `handle(a, b)` for that
+same request type `r`.
+
 ## Responder DSL
 The responder DSL example is the dual to the above requester DSL.
 ```scala
@@ -135,7 +146,7 @@ at least one additional element than we request.
 ## Run Instructions
 This project is managed with sbt. Simply navigate to the root directory with build.sbt and run `sbt assembly`.
 You can generate a script by first creating an object that extends either `RequesterDSL` or `ResponderDSL` (depending on if you want to generate a requester script or a responder script). Then, follow the examples above to start writing your scripts.
-When you want to generate the script, compile again with `sbt assembly` and then use the run script `./run object-name`, where `object-name` is the name of the Scala object containing the tests.
+When you want to generate the script, compile again with `sbt assembly` and then use the run script `./run.sh object-name`, where `object-name` is the name of the Scala object containing the tests.
 
 ## Documentation
 
@@ -418,3 +429,10 @@ in order to make the IO async from the rest of the test thread, and each
 thread should make sure the previous thread that is calling add has finished before calling add itself so that marble
 order does not get mixed up.
 
+## Future Work
+
+Of the bugs that the TCK has found so far, all were edge cases that would have been hard to identify during "normal" usage of ReactiveSockets
+because they include events in strange orders that might rarely happen during normal usage. One way to be able to more quickly find these
+bugs would be to implement fuzzing at the application level. In this case, we would generate events in a random order and assert on the result.
+In order to do the assertions correctly however, this would require us to generate some sort of state graph and do a random traversal on it,
+and keep track of the state we end on, so we can assert that the behavior indeed matches what we expect on that state.
