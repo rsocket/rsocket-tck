@@ -8,7 +8,7 @@ object client extends RequesterDSL {
 
   // RequestResponse tests
 
-  /*@Test
+  @Test
   def requestResponsePass() : Unit = {
     val s = requestResponse("a", "b")
     s request 1
@@ -681,7 +681,7 @@ object client extends RequesterDSL {
     s2 cancel()
     s3 cancel()
     s4 cancel()
-  }*/
+  }
 
   @Test(pass = false)
   def requestStreamAfterCancel() : Unit = {
@@ -692,7 +692,7 @@ object client extends RequesterDSL {
     s cancel()
     s assertCanceled()
     s request 1
-    s awaitAtLeast 1 // should timeout
+    s awaitAtLeast 2 // should timeout
   }
 
   @Test(pass = false)
@@ -704,7 +704,7 @@ object client extends RequesterDSL {
     s cancel()
     s assertCanceled()
     s request 1
-    s awaitAtLeast 1 // should timeout
+    s awaitAtLeast 3 // should timeout
   }
 
   @Test(pass = false)
@@ -723,9 +723,11 @@ object client extends RequesterDSL {
 
   @Test
   def requestChannelAfterCancel2() : Unit = {
-    val s = channelSubscriber()
-    s request 1
-    s awaitAtLeast 1
+    requestChannel using("after", "cancel2") asFollows(() => {
+      val s = channelSubscriber()
+      s request 1
+      s awaitAtLeast 1
+    })
   }
 
 }
