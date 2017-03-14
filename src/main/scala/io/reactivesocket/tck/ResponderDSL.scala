@@ -94,13 +94,6 @@ class ResponderDSL {
     }
   }
 
-  object requestSubscription extends HandlerImpl {
-    override def handle(data: String, meta: String) : Handler = {
-      writer.write("sub%%" + data + "%%" + meta + "%%")
-      this
-    }
-  }
-
   object requestChannel extends ChannelHandler {
 
     override def shouldFail(): ChannelHandler = {

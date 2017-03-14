@@ -27,7 +27,6 @@ object RequesterReflection extends RequesterDSL {
         val test : Test = method.getDeclaredAnnotations()(0).asInstanceOf[Test]
         begintest()
         nametest(method.getName)
-        if (test.pass()) pass else fail
         method.invoke(cls)
       }
     }

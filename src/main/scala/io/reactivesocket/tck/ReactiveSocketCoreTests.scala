@@ -179,136 +179,6 @@ object client extends RequesterDSL {
     s2 assertError()
   }
 
-  // Request Subscription tests
-
-  @Test
-  def requestSubscriptionEmpty() : Unit = {
-    val s = requestSubscription("a", "b")
-    s request 1
-    s assertNoErrors()
-    s assertNotCompleted()
-    s awaitNoAdditionalEvents 1000
-    s assertReceivedCount 0
-  }
-
-  @Test
-  def requestSubscriptionSingle() : Unit = {
-    val s = requestSubscription("c", "d")
-    s request 10
-    s awaitAtLeast 1
-    s awaitNoAdditionalEvents 1000
-    s assertReceivedCount 1
-    s assertReceived List(("jimbo", "jones"))
-    s assertNotCompleted()
-    s assertNoErrors()
-  }
-
-  @Test
-  def requestSubscriptionMulti() : Unit = {
-    val s = requestSubscription("e", "f")
-    s request 10
-    s awaitAtLeast 3
-    s awaitNoAdditionalEvents 1000
-    s assertReceivedCount 3
-    s assertNotCompleted()
-    s assertNoErrors()
-    s assertReceived List(("a", "a"), ("b", "b"), ("c", "c"))
-  }
-
-  @Test
-  def requestSubscriptionError() : Unit = {
-    val s = requestSubscription("g", "h")
-    s request 100
-    s.awaitTerminal // do this change
-    s assertNotCompleted()
-    s assertError()
-    s assertReceivedCount 0
-  }
-
-  @Test
-  def requestSubscriptionValueThenError() : Unit = {
-    val s = requestSubscription("i", "j")
-    s request 10
-    s awaitTerminal()
-    s assertReceivedCount 1
-    s assertError()
-    s assertNotCompleted()
-  }
-
-  @Test
-  def requestSubscriptionFlowControl() : Unit = {
-    val s = requestSubscription("k", "l")
-    s request 2
-    s awaitAtLeast 2
-    s awaitNoAdditionalEvents 1000
-    s assertReceivedCount 2
-    s assertNotCompleted()
-    s assertNoErrors()
-    s request 2
-    s awaitAtLeast 4
-    s awaitNoAdditionalEvents 1000
-    s assertReceivedCount 4
-  }
-
-  @Test
-  def requestSubscriptionFlowControl2() : Unit = {
-    val s = requestSubscription("m", "n")
-    s request 10
-    s awaitAtLeast 4
-    s awaitNoAdditionalEvents 1000
-    s assertReceivedCount 4
-  }
-
-  @Test
-  def requestSubscriptionCancel() : Unit = {
-    val s = requestSubscription("m", "n")
-    s cancel()
-    s awaitNoAdditionalEvents 1000
-    s assertCanceled()
-    s assertNotCompleted()
-    s assertNoErrors()
-    s assertReceivedCount 0
-    val s2 = requestSubscription("m", "n")
-    s2 request 1
-    s2 cancel()
-    s2 awaitNoAdditionalEvents 1000
-    s2 assertCanceled()
-    s2 assertNotCompleted()
-    s2 assertNoErrors()
-  }
-
-  @Test
-  def requestSubscriptionCancel2() : Unit = {
-    val s = requestSubscription("m", "n")
-    s request 1
-    s awaitAtLeast 1
-    s cancel()
-    s assertCanceled()
-    s assertNotCompleted()
-    s assertNoErrors()
-    s awaitNoAdditionalEvents 1000
-  }
-
-  @Test
-  def requestSubscriptionInterleave() : Unit = {
-    val s = requestSubscription("o", "p")
-    val s2 = requestSubscription("q", "r")
-    s2 request 1
-    s request 1
-    s2 cancel()
-    s awaitAtLeast 1
-    s assertNoErrors()
-    val s3 = requestSubscription("s", "t")
-    s2 assertReceivedAtLeast 0
-    s3 request 2
-    s3 awaitTerminal()
-    s3 assertError()
-    s3 awaitNoAdditionalEvents 1000
-    s3 assertNotCompleted()
-    s3 assertReceivedCount 2
-    s assertNotCompleted()
-  }
-
   // fire and forget tests
 
   @Test
@@ -587,22 +457,6 @@ object client extends RequesterDSL {
   }
 
   @Test
-  def requestSubscriptionMultipleSuccession() = {
-    val s1 = requestSubscription("aa", "bb")
-    val s2 = requestSubscription("aa", "bb")
-    val s3 = requestSubscription("aa", "bb")
-    val s4 = requestSubscription("aa", "bb")
-    s1 request 1
-    s2 request 1
-    s3 request 1
-    s4 request 1
-    s1 awaitAtLeast 1
-    s2 awaitAtLeast 1
-    s3 awaitAtLeast 1
-    s4 awaitAtLeast 1
-  }
-
-  @Test
   def requestChannelMultipleSuccession() = {
     requestChannel using("xx", "yy") asFollows(() => {
       val s = channelSubscriber()
@@ -667,22 +521,6 @@ object client extends RequesterDSL {
     s4 cancel()
   }
 
-  @Test
-  def requestSubscriptionMultipleCancel() : Unit = {
-    val s1 = requestSubscription("aa", "bb")
-    val s2 = requestSubscription("aa", "bb")
-    val s3 = requestSubscription("aa", "bb")
-    val s4 = requestSubscription("aa", "bb")
-    s1 request 1
-    s2 request 1
-    s3 request 1
-    s4 request 1
-    s1 cancel()
-    s2 cancel()
-    s3 cancel()
-    s4 cancel()
-  }
-
   @Test(pass = false)
   def requestStreamAfterCancel() : Unit = {
     val s = requestStream("after", "cancel")
@@ -693,18 +531,6 @@ object client extends RequesterDSL {
     s assertCanceled()
     s request 1
     s awaitAtLeast 2 // should timeout
-  }
-
-  @Test(pass = false)
-  def requestSubscriptionAfterCancel() : Unit = {
-    val s = requestSubscription("after", "cancel")
-    s request 2
-    s awaitAtLeast 2
-    s assertReceivedCount 2
-    s cancel()
-    s assertCanceled()
-    s request 1
-    s awaitAtLeast 3 // should timeout
   }
 
   @Test(pass = false)
@@ -763,22 +589,6 @@ object server extends ResponderDSL {
     requestStream handle("q", "r") using("a-b-c--d-#")
     requestStream handle("aa", "bb") using("a-b-c-d-|")
     requestStream handle("after", "cancel") using("a-b-c-d-e-|")
-  }
-
-  @Test
-  def handleRequestSubscription() : Unit = {
-    requestSubscription handle("a", "b") using("|")
-    requestSubscription handle("c", "d") using(Map("x" -> ("jimbo", "jones")), "x-")
-    requestSubscription handle("e", "f") using("a-b-c-")
-    requestSubscription handle("g", "h") using("#")
-    requestSubscription handle("i", "j") using("a-#")
-    requestSubscription handle("k", "l") using("a-b-c-d-e-f-g-")
-    requestSubscription handle("m", "n") using("a-b-c-d-")
-    requestSubscription handle("o", "p") using("a-b-")
-    requestSubscription handle("q", "r") using("a-b-c--d-#")
-    requestSubscription handle("s", "t") using("a-b-#")
-    requestSubscription handle("aa", "bb") using("a-b-c-d-|")
-    requestSubscription handle("after", "cancel") using("a-b-c-d-e-|")
   }
 
   @Test
