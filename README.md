@@ -10,6 +10,18 @@ We accomplish these challenges by defining a Domain Specific Language (DSL) usin
 We have a DSL for generating client tests as well as a DSL that can specify server behavior. The intermediate script generated is human readable and can be parsed easily line by line, but allows for powerful functionality.
 This allows implementers of the Reactive Socket protocol to be able to write their own drivers without too much trouble.
 
+## Running the TCK
+
+This project generates script files, which are parsed and executed by implementors.
+To generate the script files:
+
+    sbt compile
+    ./run.sh client clientscript.txt
+    ./run.sh server serverscript.txt
+
+This gives you the server and client scripts, the format of which is documented below. 
+For examples of how to run them, see the TCK driver implementation in the reactivesocket-java project.
+
 ## Requester DSL
 
 The DSLs are designed to be human readable as well, and should require very little documentation to understand. Here is an example of the client side DSL
