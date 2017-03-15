@@ -32,9 +32,6 @@ class RequesterDSL {
   def firenForget(data: String, metadata: String) : DSLTestSubscriber =
     new DSLTestSubscriber(writer, data, metadata, "fnf")
 
-  def requestSubscription(data: String, metadata: String) : DSLTestSubscriber =
-    new DSLTestSubscriber(writer, data, metadata, "sub")
-
   def end() : Unit = {
     writer.write("EOF\n")
     writer.close()
@@ -77,9 +74,5 @@ class RequesterDSL {
   def respond(marble : String) : Unit = {
     writer.write("respond%%" + marble + "\n")
   }
-
-  def pass() : Unit = writer.write("pass\n")
-
-  def fail() : Unit = writer.write("fail\n")
 
 }
