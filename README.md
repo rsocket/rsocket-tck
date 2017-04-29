@@ -278,12 +278,12 @@ mix of the two.
 On the requester side, we define a request to start a channel connection using `requestChannel using(a, b)`. This sets
 the initial payload as (a, b). On the responder side, we define a channel handler using requestChannel handle(a, b). This
 says that if our channel handler gets an initial payload of (a, b), we use this request handler to handle it. The server side DSL
-allow allows the user to specify that the channel test SHOULD fail (if we're testing negative behavior such as a timeout), and this
+allows the user to specify that the channel test SHOULD fail (if we're testing negative behavior such as a timeout), and this
 can be done by using `requestChannel handle(a, b) shouldFail() asFollows(() => { ...`.
-Then, in the `asFollows` clause, we then define the behavior of the channel using both requester and responder elements.
+Then, in the `asFollows` clause, we define the behavior of the channel using both requester and responder elements.
 
 `val s = channelSubscriber` : this creates a subscriber with the exact same functionality we defined earlier; and uses
-the same syntax
+the same syntax.
 
 `respond(<marble>)` : this tells the driver to asynchronously respond with the given marble. However, keep in mind that it still may
 not have responded with the marble of previous `respond` calls earlier on in the test. This is because the channel still must
@@ -310,17 +310,18 @@ a hash table to keep track of the subscribers.
 
 `request%%<n>%%<id>` : The driver should tell the subscriber with `id` to request `n`.
 
-`cancel%%<id>` : The driver should tell the subscriber with `id` to cancel its subscription
+`cancel%%<id>` : The driver should tell the subscriber with `id` to cancel its subscription.
 
 `await%%terminal%%<id>` : The driver should hang the test thread running the current test and await for a terminal event sent to
 the subscriber with `id`.
 
-`await%%atLeast%%<id>%%<n>` : The driver should hang the test thread and await for the subscriber with `id` to have IN TOTAL `n` items send to it by `onNext`
+`await%%atLeast%%<id>%%<n>` : The driver should hang the test thread and await for the subscriber with `id` to have IN TOTAL `n` 
+items send to it by `onNext`.
 
 `await%%no_events%%<id>%%<time>` : The driver should wait for `time` and assert that it received no additional events during that time, such
 as `onNext`, `onComplete`, or `cancel`.
 
-`take%%<n>%%<id>` : The driver should hang the test thread until it has received at least `n` items IN TOTAL, and then immediately cancel
+`take%%<n>%%<id>` : The driver should hang the test thread until it has received at least `n` items IN TOTAL, and then immediately cancel.
 
 `assert%%no_error%%<id>` : The driver should assert that the test subscriber has not received any `onError`.
 
@@ -331,9 +332,9 @@ as `onNext`, `onComplete`, or `cancel`.
 
 `assert%%received_n%%<id>%%<n>` : The driver should assert that the test subscriber with `id` has received exactly `n` values.
 
-`assert%%received_at_least%%<id>%%<n> : Same as above, but this one asserts at least `n` values.
+`assert%%received_at_least%%<id>%%<n>` : Same as above, but this one asserts at least `n` values.
 
-`assert%%completed%%<id> : This asserts that the test subscriber with `id` has received an `onComplete`.
+`assert%%completed%%<id>` : This asserts that the test subscriber with `id` has received an `onComplete`.
 
 `assert%%no_completed%%<id>` : This asserts the opposite of the above.
 
