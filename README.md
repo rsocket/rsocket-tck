@@ -84,7 +84,7 @@ tests. So for example, calling `respond(...)` and then `request ...` will not bl
 that have already be started.
 
 ## QuickStart Instructions
-There are two sets of premade tests in this project. They are in the files `ReactiveSocketCoreTests.scala` and `SampleTests.scala`.
+There are three sets of premade tests in this project. They are in the files `ReactiveSocketCoreTests.scala`, `SampleTests.scala` and `ResumptionTests.scala`.
 To generate the script files for the `SampleTests.scala` set of tests, first compile the project with `sbt assembly` and then to generate
 the script run `./run.sh clienttest` and `./run.sh servertest`. This should generate the script files in the current directory.
 These files will be needed in order to run the driver. The Java driver can be found [here](https://github.com/ReactiveSocket/reactivesocket-java/tree/master/reactivesocket-tck-drivers).
@@ -322,6 +322,10 @@ items send to it by `onNext`.
 as `onNext`, `onComplete`, or `cancel`.
 
 `take%%<n>%%<id>` : The driver should hang the test thread until it has received at least `n` items IN TOTAL, and then immediately cancel.
+
+`disconnect` : The driver should disconnect the client from the server.
+
+`resume` : The driver should resume the connection with the server.
 
 `assert%%no_error%%<id>` : The driver should assert that the test subscriber has not received any `onError`.
 
