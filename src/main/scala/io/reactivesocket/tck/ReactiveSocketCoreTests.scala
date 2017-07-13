@@ -28,13 +28,6 @@ object client extends RequesterDSL {
     s assertError()
   }
 
-  @Test(pass = false)
-  def requestResponseTimeoutFail() : Unit = {
-    val s = requestResponse("e", "f")
-    s request 1
-    s awaitTerminal()
-  }
-
   @Test
   def requestResponseCancel() : Unit = {
     val s = requestResponse("g", "h")
@@ -480,13 +473,13 @@ object client extends RequesterDSL {
     })
   }
 
-  @Test(pass = false)
+  @Test
   def requestResponseRequestAfterCancel(): Unit = {
     val s = requestResponse("request", "cancel")
     s cancel()
     s request 1
-    s awaitAtLeast 1
-    s assertReceivedCount 1
+    s awaitNoAdditionalEvents 2000
+    s assertReceivedCount 0
   }
 
   @Test
@@ -521,7 +514,7 @@ object client extends RequesterDSL {
     s4 cancel()
   }
 
-  @Test(pass = false)
+  @Test
   def requestStreamAfterCancel() : Unit = {
     val s = requestStream("after", "cancel")
     s request 1
@@ -530,7 +523,8 @@ object client extends RequesterDSL {
     s cancel()
     s assertCanceled()
     s request 1
-    s awaitAtLeast 2 // should timeout
+    s awaitNoAdditionalEvents 2000
+    s assertReceivedCount 1
   }
 
   @Test(pass = false)
