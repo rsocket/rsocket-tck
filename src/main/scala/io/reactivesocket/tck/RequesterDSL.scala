@@ -23,14 +23,17 @@ class RequesterDSL {
 
   var writer: PrintWriter = new PrintWriter(new File(filename))
 
-  def requestResponse(data: String, metadata: String) : DSLTestSubscriber =
-    new DSLTestSubscriber(writer, data, metadata, "rr")
+  def requestResponse(data: String, metadata: String, c: DSLTestClient = null) : DSLTestSubscriber =
+    new DSLTestSubscriber(writer, data, metadata, "rr", c: DSLTestClient)
 
-  def requestStream(data: String, metadata: String) : DSLTestSubscriber =
-    new DSLTestSubscriber(writer, data, metadata, "rs")
+  def requestStream(data: String, metadata: String, c: DSLTestClient = null) : DSLTestSubscriber =
+    new DSLTestSubscriber(writer, data, metadata, "rs", c)
 
-  def firenForget(data: String, metadata: String) : DSLTestSubscriber =
-    new DSLTestSubscriber(writer, data, metadata, "fnf")
+  def firenForget(data: String, metadata: String, c: DSLTestClient = null) : DSLTestSubscriber =
+    new DSLTestSubscriber(writer, data, metadata, "fnf", c)
+
+  def client() : DSLTestClient =
+    new DSLTestClient(writer)
 
   def end() : Unit = {
     writer.write("EOF\n")
