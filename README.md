@@ -185,14 +185,11 @@ an IDE like Intellij to write these tests, the autocomplete feature should be ve
 but we will go into detail later on exactly how a driver would be able to parse this command.
 The tests we write will have the following general format
 ```scala
-@Test(pass = fail)
+@Test
 def testName() : Unit = {
   // test logic
 }
 ```
-Note that that `(pass = fail)` part of the test header is optional. This line is for asserting the outcome of the test,
-as there are some situations that users would want to write tests that will fail. The default behavior is `(pass = true)`
-so for most tests that assert correct behavior, this part of the annotation is not needed.
 
 ##### Request Commands
 
