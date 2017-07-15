@@ -32,12 +32,12 @@ class DSLTestSubscriber(writer : PrintWriter, initData: String, initMeta: String
   private var id: UUID = null
   this.id = UUID.randomUUID
 
-  private var clientId: Int = ClientIDGen.currentCount()
-  if (client != null) clientId = client.getID
+  private var clientID: Int = ClientIDGen.currentCount()
+  if (client != null) clientID = client.getID
 
   // decide what type of subscriber to write down
   if (kind.equals("")) writer.write("") // write nothing
-  else writer.write("c" + clientId + "%%" + "subscribe%%" + kind + "%%" + this.getID + "%%" + initData + "%%" +
+  else writer.write("c" + clientID + "%%" + "subscribe%%" + kind + "%%" + this.getID + "%%" + initData + "%%" +
     initMeta + "\n")
 
   def getID: String = return this.id.toString
@@ -50,43 +50,43 @@ class DSLTestSubscriber(writer : PrintWriter, initData: String, initMeta: String
 
   override def onComplete() : Unit = {}
 
-  override def request(n: Long) : Unit = writer.write("c" + clientId + "%%" + "request%%" + n + "%%" + this.id + "\n")
+  override def request(n: Long) : Unit = writer.write("c" + clientID + "%%" + "request%%" + n + "%%" + this.id + "\n")
 
-  override def cancel() : Unit = writer.write("c" + clientId + "%%" + "cancel%%" + this.id + "\n")
+  override def cancel() : Unit = writer.write("c" + clientID + "%%" + "cancel%%" + this.id + "\n")
 
 
   // assertion tests
 
-  def assertNoErrors() : Unit = writer.write("c" + clientId + "%%" + "assert%%no_error%%" + this.id + "\n")
+  def assertNoErrors() : Unit = writer.write("c" + clientID + "%%" + "assert%%no_error%%" + this.id + "\n")
 
-  def assertError() : Unit = writer.write("c" + clientId + "%%" + "assert%%error%%" + this.id + "\n")
+  def assertError() : Unit = writer.write("c" + clientID + "%%" + "assert%%error%%" + this.id + "\n")
 
   def assertReceived(lst: List[(String, String)]) : Unit =
-    writer.write("c" + clientId + "%%" + "assert%%received%%" + this.id + "%%" + printList(lst) + "\n")
+    writer.write("c" + clientID + "%%" + "assert%%received%%" + this.id + "%%" + printList(lst) + "\n")
 
   def assertReceivedCount(n: Long) : Unit =
-    writer.write("c" + clientId + "%%" + "assert%%received_n%%" + this.id + "%%" + n + "\n")
+    writer.write("c" + clientID + "%%" + "assert%%received_n%%" + this.id + "%%" + n + "\n")
 
   def assertReceivedAtLeast(n: Long) : Unit =
-    writer.write("c" + clientId + "%%" + "assert%%received_at_least%%" + this.id + "%%" + n + "\n")
+    writer.write("c" + clientID + "%%" + "assert%%received_at_least%%" + this.id + "%%" + n + "\n")
 
-  def assertCompleted() : Unit = writer.write("c" + clientId + "%%" + "assert%%completed%%" + this.id + "\n")
+  def assertCompleted() : Unit = writer.write("c" + clientID + "%%" + "assert%%completed%%" + this.id + "\n")
 
-  def assertNotCompleted() : Unit = writer.write("c" + clientId + "%%" + "assert%%no_completed%%" + this.id + "\n")
+  def assertNotCompleted() : Unit = writer.write("c" + clientID + "%%" + "assert%%no_completed%%" + this.id + "\n")
 
-  def assertCanceled() : Unit = writer.write("c" + clientId + "%%" + "assert%%canceled%%" + this.id + "\n")
+  def assertCanceled() : Unit = writer.write("c" + clientID + "%%" + "assert%%canceled%%" + this.id + "\n")
 
   // await
 
-  def awaitTerminal() : Unit = writer.write("c" + clientId + "%%" + "await%%terminal%%" + this.id + "\n")
+  def awaitTerminal() : Unit = writer.write("c" + clientID + "%%" + "await%%terminal%%" + this.id + "\n")
 
   def awaitAtLeast(n: Long) =
-    writer.write("c" + clientId + "%%" + "await%%atLeast%%" + this.id + "%%" + n + "%%" + 100 + "\n")
+    writer.write("c" + clientID + "%%" + "await%%atLeast%%" + this.id + "%%" + n + "%%" + 100 + "\n")
 
   def awaitNoAdditionalEvents(t: Long) =
-    writer.write("c" + clientId + "%%" + "await%%no_events%%" + this.id + "%%" + t + "\n")
+    writer.write("c" + clientID + "%%" + "await%%no_events%%" + this.id + "%%" + t + "\n")
 
-  def take(n: Long) : Unit = writer.write("c" + clientId + "%%" + "take%%" + n + "%%" + this.id + "\n")
+  def take(n: Long) : Unit = writer.write("c" + clientID + "%%" + "take%%" + n + "%%" + this.id + "\n")
 
   // internal functions
 
