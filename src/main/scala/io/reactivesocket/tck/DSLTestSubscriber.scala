@@ -32,8 +32,9 @@ class DSLTestSubscriber(writer : PrintWriter, initData: String, initMeta: String
   private var id: UUID = null
   this.id = UUID.randomUUID
 
-  private var clientID: Int = ClientIDGen.currentCount()
-  if (client != null) clientID = client.getID
+  private var clientID: Int =
+  if (client != null) client.getID
+  else ClientIDGen.getNewID()
 
   // decide what type of subscriber to write down
   if (kind.equals("")) writer.write("") // write nothing

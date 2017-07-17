@@ -15,10 +15,11 @@ package io.reactivesocket.tck
 
 import java.io.PrintWriter
 
+// Counter is use as a unique ID. Counter is incremented by 1 on every call 
 object ClientIDGen {
   var count = 0
 
-  def currentCount(): Int = {
+  def getNewID(): Int = {
     count += 1
     count
   }
@@ -26,7 +27,7 @@ object ClientIDGen {
 
 class DSLTestClient(writer : PrintWriter) {
 
-  private var id: Int = ClientIDGen.currentCount()
+  private var id: Int = ClientIDGen.getNewID()
 
   def getID: Int = return this.id
 
