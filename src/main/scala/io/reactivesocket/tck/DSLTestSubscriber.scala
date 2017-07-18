@@ -32,7 +32,7 @@ class DSLTestSubscriber(writer : PrintWriter, initData: String, initMeta: String
   private var id: UUID = null
   this.id = UUID.randomUUID
 
-  // Subscription with undefined client are associated with clientID 0
+  // Subscription with undefined client is associated with clientID 0
   private var clientID = client.map(_.getID).getOrElse(0)
 
   // decide what type of subscriber to write down
