@@ -74,8 +74,9 @@ class RequesterDSL {
     return new DSLTestSubscriber(writer, "", "", "", None);
   }
 
-  def respond(marble : String) : Unit = {
-    writer.write("respond%%" + marble + "\n")
+  def respond(marble : String, client: Option[DSLTestClient] = None) : Unit = {
+    var clientID = client.map(_.getID).getOrElse(0)
+    writer.write("c" + clientID + "%%" + "respond%%" + marble + "\n")
   }
 
 }
