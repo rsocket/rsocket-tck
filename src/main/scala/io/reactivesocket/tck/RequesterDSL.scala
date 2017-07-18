@@ -23,13 +23,13 @@ class RequesterDSL {
 
   var writer: PrintWriter = new PrintWriter(new File(filename))
 
-  def requestResponse(data: String, metadata: String, c: DSLTestClient = null) : DSLTestSubscriber =
-    new DSLTestSubscriber(writer, data, metadata, "rr", c: DSLTestClient)
+  def requestResponse(data: String, metadata: String, c: Option[DSLTestClient] = None) : DSLTestSubscriber =
+    new DSLTestSubscriber(writer, data, metadata, "rr", c)
 
-  def requestStream(data: String, metadata: String, c: DSLTestClient = null) : DSLTestSubscriber =
+  def requestStream(data: String, metadata: String, c: Option[DSLTestClient] = None) : DSLTestSubscriber =
     new DSLTestSubscriber(writer, data, metadata, "rs", c)
 
-  def firenForget(data: String, metadata: String, c: DSLTestClient = null) : DSLTestSubscriber =
+  def firenForget(data: String, metadata: String, c: Option[DSLTestClient] = None) : DSLTestSubscriber =
     new DSLTestSubscriber(writer, data, metadata, "fnf", c)
 
   def client() : DSLTestClient =
@@ -71,7 +71,7 @@ class RequesterDSL {
   def channelSubscriber() : DSLTestSubscriber = {
     // we create a trivial subscriber because we don't need a "real" one, because we will already pass in a test
     // subscriber in the driver, as one should have already been created to get the initial payload from the client
-    return new DSLTestSubscriber(writer, "", "", "");
+    return new DSLTestSubscriber(writer, "", "", "", None);
   }
 
   def respond(marble : String) : Unit = {

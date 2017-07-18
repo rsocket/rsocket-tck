@@ -25,7 +25,7 @@ import org.json4s.native.Serialization
 
 
 class DSLTestSubscriber(writer : PrintWriter, initData: String, initMeta: String, kind: String,
-  client: DSLTestClient = null) extends Subscriber[Payload] with Subscription {
+  client: Option[DSLTestClient]) extends Subscriber[Payload] with Subscription {
 
   implicit val formats = Serialization.formats(NoTypeHints)
 
@@ -33,7 +33,7 @@ class DSLTestSubscriber(writer : PrintWriter, initData: String, initMeta: String
   this.id = UUID.randomUUID
 
   private var clientID: Int =
-  if (client != null) client.getID
+  if (client.isDefined) client.get.getID
   else ClientIDGen.getNewID()
 
   // decide what type of subscriber to write down
