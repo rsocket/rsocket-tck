@@ -31,7 +31,7 @@ object SubscriberIDGen {
   }
 }
 class DSLTestSubscriber(writer : PrintWriter, initData: String, initMeta: String, kind: String,
-                        client: Option[DSLTestClient]) extends Subscriber[Payload] with Subscription {
+  client: Option[DSLTestClient]) extends Subscriber[Payload] with Subscription {
 
   implicit val formats = Serialization.formats(NoTypeHints)
 
