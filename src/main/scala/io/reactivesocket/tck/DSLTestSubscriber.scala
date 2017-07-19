@@ -14,7 +14,6 @@
 package io.reactivesocket.tck
 
 import java.io.PrintWriter
-import java.util.UUID
 
 import io.reactivesocket.Payload
 import org.reactivestreams.{Subscriber, Subscription}
@@ -23,14 +22,20 @@ import org.json4s._
 import org.json4s.native.Serialization
 
 
+object SubscriberIDGen {
+  var count = 0
 
+  def getNewID(): Int = {
+    count += 1
+    count
+  }
+}
 class DSLTestSubscriber(writer : PrintWriter, initData: String, initMeta: String, kind: String,
-  client: Option[DSLTestClient]) extends Subscriber[Payload] with Subscription {
+                        client: Option[DSLTestClient]) extends Subscriber[Payload] with Subscription {
 
   implicit val formats = Serialization.formats(NoTypeHints)
 
-  private var id: UUID = null
-  this.id = UUID.randomUUID
+  private var id: Int = SubscriberIDGen.getNewID()
 
   // Subscription with undefined client is associated with clientID 0
   private var clientID = client.map(_.getID).getOrElse(0)
