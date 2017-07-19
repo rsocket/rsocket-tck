@@ -31,4 +31,14 @@ class DSLTestClient(writer : PrintWriter) {
 
   def getID: Int = return this.id
 
+  // resumption
+
+  def resume() : Unit = writer.write("c" + this.id + "%%" + "resume" + "\n")
+
+  def disconnect() : Unit = writer.write("c" + this.id + "%%" + "disconnect" + "\n")
+
+  def assertNoClientErrors() : Unit = writer.write("c" + this.id + "%%" + "assert%%no_client_error" + "\n")
+
+  def assertClientError() : Unit = writer.write("c" + this.id + "%%" + "assert%%client_error" + "\n")
+
 }

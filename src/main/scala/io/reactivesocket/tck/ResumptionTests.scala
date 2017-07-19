@@ -22,13 +22,14 @@ object resumptionclienttest extends RequesterDSL {
   // example for testing stream
   @Test
   def streamResumptionTest1() : Unit = {
-    val s1 = requestStream("a", "b")
+    val c1 = client()
+    val s1 = requestStream("a", "b", Some(c1))
     s1 request 3
     s1 awaitAtLeast(3)
     s1 assertReceived(List(("a", "b"), ("c", "d"), ("e", "f")))
-    s1 disconnect()
+    c1 disconnect()
     s1 request 3
-    s1 resume()
+    c1 resume()
     s1 awaitTerminal()
     s1 assertCompleted()
     s1 assertNoErrors()
@@ -37,11 +38,12 @@ object resumptionclienttest extends RequesterDSL {
 
   @Test
   def streamResumptionTest2() : Unit = {
-    val s1 = requestStream("a", "b")
+    val c1 = client()
+    val s1 = requestStream("a", "b", Some(c1))
     s1 request 3
     s1 awaitAtLeast(3)
     s1 assertReceived(List(("a", "b"), ("c", "d"), ("e", "f")))
-    s1 disconnect()
+    c1 disconnect()
     s1 request 3
     s1 awaitNoAdditionalEvents 100
     s1 assertReceivedCount 3
@@ -49,13 +51,14 @@ object resumptionclienttest extends RequesterDSL {
 
   @Test
   def streamResumptionTest3() : Unit = {
-    val s1 = requestStream("a", "b")
+    val c1 = client()
+    val s1 = requestStream("a", "b", Some(c1))
     s1 request 3
     s1 awaitAtLeast(3)
     s1 assertReceived(List(("a", "b"), ("c", "d"), ("e", "f")))
-    s1 disconnect()
+    c1 disconnect()
     s1 request 1
-    s1 resume()
+    c1 resume()
     s1 request 2
     s1 awaitTerminal()
     s1 assertReceivedCount 6
@@ -63,12 +66,13 @@ object resumptionclienttest extends RequesterDSL {
 
   @Test
   def streamResumptionTest4() : Unit = {
-    val s1 = requestStream("a", "b")
+    val c1 = client()
+    val s1 = requestStream("a", "b", Some(c1))
     s1 request 3
     s1 awaitAtLeast(3)
     s1 assertReceived(List(("a", "b"), ("c", "d"), ("e", "f")))
-    s1 disconnect()
-    s1 resume()
+    c1 disconnect()
+    c1 resume()
     s1 request 3
     s1 awaitTerminal()
     s1 assertCompleted()

@@ -88,12 +88,6 @@ class DSLTestSubscriber(writer : PrintWriter, initData: String, initMeta: String
 
   def take(n: Long) : Unit = writer.write("c" + clientID + "%%" + "take%%" + n + "%%" + this.id + "\n")
 
-  // resumption
-
-  def resume() : Unit = writer.write("resume%%" + this.id + "\n")
-
-  def disconnect() : Unit = writer.write("disconnect%%" + this.id + "\n")
-
   // internal functions
 
   private def printList(lst: List[(String, String)]) : String = lst.map(a => a._1 + "," + a._2).mkString("&&")
