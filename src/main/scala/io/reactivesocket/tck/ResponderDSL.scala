@@ -188,11 +188,12 @@ class ResponderDSL {
   def channelSubscriber() : DSLTestSubscriber = {
     // we create a trivial subscriber because we don't need a "real" one, because we will already pass in a test
     // subscriber in the driver, as one should have already been created to get the initial payload from the client
-    new DSLTestSubscriber(writer, "", "", "");
+    new DSLTestSubscriber(writer, "", "", "", None);
   }
 
-  def respond(marble : String) : Unit = {
-    writer.write("respond%%" + marble + "\n")
+  def respond(marble : String, client: Option[DSLTestClient] = None) : Unit = {
+    var clientID = client.map(_.getID).getOrElse(0)
+    writer.write("c" + clientID + "%%" + "respond%%" + marble + "\n")
   }
 
 }

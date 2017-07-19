@@ -23,17 +23,22 @@ import org.json4s._
 import org.json4s.native.Serialization
 
 
-class DSLTestSubscriber(writer : PrintWriter, initData: String, initMeta: String, kind: String)
-  extends Subscriber[Payload] with Subscription {
+
+class DSLTestSubscriber(writer : PrintWriter, initData: String, initMeta: String, kind: String,
+  client: Option[DSLTestClient]) extends Subscriber[Payload] with Subscription {
 
   implicit val formats = Serialization.formats(NoTypeHints)
 
   private var id: UUID = null
   this.id = UUID.randomUUID
 
+  // Subscription with undefined client is associated with clientID 0
+  private var clientID = client.map(_.getID).getOrElse(0)
+
   // decide what type of subscriber to write down
   if (kind.equals("")) writer.write("") // write nothing
-  else writer.write("subscribe%%" + kind + "%%" + this.getID + "%%" + initData + "%%" + initMeta + "\n")
+  else writer.write("c" + clientID + "%%" + "subscribe%%" + kind + "%%" + this.getID + "%%" + initData + "%%" +
+    initMeta + "\n")
 
   def getID: String = return this.id.toString
 
@@ -45,39 +50,43 @@ class DSLTestSubscriber(writer : PrintWriter, initData: String, initMeta: String
 
   override def onComplete() : Unit = {}
 
-  override def request(n: Long) : Unit = writer.write("request%%" + n + "%%" + this.id + "\n")
+  override def request(n: Long) : Unit = writer.write("c" + clientID + "%%" + "request%%" + n + "%%" + this.id + "\n")
 
-  override def cancel() : Unit = writer.write("cancel%%" + this.id + "\n")
+  override def cancel() : Unit = writer.write("c" + clientID + "%%" + "cancel%%" + this.id + "\n")
 
 
   // assertion tests
 
-  def assertNoErrors() : Unit = writer.write("assert%%no_error%%" + this.id + "\n")
+  def assertNoErrors() : Unit = writer.write("c" + clientID + "%%" + "assert%%no_error%%" + this.id + "\n")
 
-  def assertError() : Unit = writer.write("assert%%error%%" + this.id + "\n")
+  def assertError() : Unit = writer.write("c" + clientID + "%%" + "assert%%error%%" + this.id + "\n")
 
   def assertReceived(lst: List[(String, String)]) : Unit =
-    writer.write("assert%%received%%" + this.id + "%%" + printList(lst) + "\n")
+    writer.write("c" + clientID + "%%" + "assert%%received%%" + this.id + "%%" + printList(lst) + "\n")
 
-  def assertReceivedCount(n: Long) : Unit = writer.write("assert%%received_n%%" + this.id + "%%" + n + "\n")
+  def assertReceivedCount(n: Long) : Unit =
+    writer.write("c" + clientID + "%%" + "assert%%received_n%%" + this.id + "%%" + n + "\n")
 
-  def assertReceivedAtLeast(n: Long) : Unit = writer.write("assert%%received_at_least%%" + this.id + "%%" + n + "\n")
+  def assertReceivedAtLeast(n: Long) : Unit =
+    writer.write("c" + clientID + "%%" + "assert%%received_at_least%%" + this.id + "%%" + n + "\n")
 
-  def assertCompleted() : Unit = writer.write("assert%%completed%%" + this.id + "\n")
+  def assertCompleted() : Unit = writer.write("c" + clientID + "%%" + "assert%%completed%%" + this.id + "\n")
 
-  def assertNotCompleted() : Unit = writer.write("assert%%no_completed%%" + this.id + "\n")
+  def assertNotCompleted() : Unit = writer.write("c" + clientID + "%%" + "assert%%no_completed%%" + this.id + "\n")
 
-  def assertCanceled() : Unit = writer.write("assert%%canceled%%" + this.id + "\n")
+  def assertCanceled() : Unit = writer.write("c" + clientID + "%%" + "assert%%canceled%%" + this.id + "\n")
 
   // await
 
-  def awaitTerminal() : Unit = writer.write("await%%terminal%%" + this.id + "\n")
+  def awaitTerminal() : Unit = writer.write("c" + clientID + "%%" + "await%%terminal%%" + this.id + "\n")
 
-  def awaitAtLeast(n: Long) = writer.write("await%%atLeast%%" + this.id + "%%" + n + "%%" + 100 + "\n")
+  def awaitAtLeast(n: Long) =
+    writer.write("c" + clientID + "%%" + "await%%atLeast%%" + this.id + "%%" + n + "%%" + 100 + "\n")
 
-  def awaitNoAdditionalEvents(t: Long) = writer.write("await%%no_events%%" + this.id + "%%" + t + "\n")
+  def awaitNoAdditionalEvents(t: Long) =
+    writer.write("c" + clientID + "%%" + "await%%no_events%%" + this.id + "%%" + t + "\n")
 
-  def take(n: Long) : Unit = writer.write("take%%" + n + "%%" + this.id + "\n")
+  def take(n: Long) : Unit = writer.write("c" + clientID + "%%" + "take%%" + n + "%%" + this.id + "\n")
 
   // internal functions
 
