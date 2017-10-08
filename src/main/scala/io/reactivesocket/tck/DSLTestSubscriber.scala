@@ -15,9 +15,8 @@ package io.reactivesocket.tck
 
 import java.io.PrintWriter
 
-import io.reactivesocket.Payload
+import io.rsocket.Payload
 import org.reactivestreams.{Subscriber, Subscription}
-
 import org.json4s._
 import org.json4s.native.Serialization
 

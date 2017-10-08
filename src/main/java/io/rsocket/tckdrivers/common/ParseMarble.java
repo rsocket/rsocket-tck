@@ -13,16 +13,18 @@
 
 package io.rsocket.tckdrivers.common;
 
-import static org.junit.Assert.assertNull;
-
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.rsocket.Payload;
 import io.rsocket.util.PayloadImpl;
-import java.util.*;
+import org.reactivestreams.Subscriber;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.CountDownLatch;
-import org.reactivestreams.Subscriber;
 
 /**
  * This class parses through a marble diagram, but also implements a backpressure buffer so that the
@@ -174,7 +176,7 @@ public class ParseMarble {
         }
       }
     } catch (InterruptedException e) {
-      assertNull("interrupted ", e.getMessage());
+      throw new RuntimeException("interrupted " + e.getMessage());
     }
   }
 
