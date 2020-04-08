@@ -1,5 +1,7 @@
 # RSocket TCK
 
+[![Build Status](https://travis-ci.org/rsocket/rsocket-tck.svg?branch=master)](https://travis-ci.org/rsocket/rsocket-tck)
+
 The goal of this project is to provide a reliable polyglot testing suite to 
 verify both existing and upcoming versions of servers and clients that use the 
 RSocket protocol.
