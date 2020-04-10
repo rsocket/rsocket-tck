@@ -29,7 +29,6 @@ inline class DataAndMetadata(val buffer: ByteBuf) {
     }
 }
 
-@Suppress("EXPERIMENTAL_FEATURE_WARNING")
 inline class DataAndMetadataReader(val buffer: ByteBuf) {
 
     fun metadata(hasMetadata: Boolean): ByteBuf = when (hasMetadata) {
