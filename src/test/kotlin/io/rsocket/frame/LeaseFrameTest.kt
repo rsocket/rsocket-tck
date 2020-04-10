@@ -3,7 +3,7 @@ package io.rsocket.frame
 import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.*
 
-class LeaseFrameFlyweightTest {
+class LeaseFrameTest {
     @Test
     fun leaseMetadata() {
         val metadata = TextBuffer("md")

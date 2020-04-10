@@ -3,7 +3,7 @@ package io.rsocket.frame
 import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.*
 
-class ResumeOkFrameFlyweightTest {
+class ResumeOkFrameTest {
     @Test
     fun testEncoding() {
         val resumeOkFrame = ResumeOkFrame.encode(allocator, 42)

@@ -4,7 +4,7 @@ import io.netty.buffer.*
 import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.*
 
-class PayloadFlyweightTest {
+class PayloadTest {
 
     @Test
     fun nextCompleteDataMetadata() {

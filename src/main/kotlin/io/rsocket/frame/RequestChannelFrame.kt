@@ -12,7 +12,7 @@ object RequestChannelFrame {
         requestN: Long,
         data: ByteBuf,
         metadata: ByteBuf? = null
-    ): RequestFrame = RequestFrame.encode(
+    ): RequestFrameWithInitial = RequestFrame.encode(
         allocator = allocator,
         frameType = FrameType.REQUEST_CHANNEL,
         streamId = streamId,
@@ -22,6 +22,6 @@ object RequestChannelFrame {
         requestN = if (requestN > Int.MAX_VALUE) Int.MAX_VALUE else requestN.toInt(),
         data = data,
         metadata = metadata
-    )
+    ).withInitial
 
 }

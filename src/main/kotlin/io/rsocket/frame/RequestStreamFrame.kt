@@ -11,7 +11,7 @@ object RequestStreamFrame {
         requestN: Long,
         data: ByteBuf,
         metadata: ByteBuf? = null
-    ): RequestFrame = encode(
+    ): RequestFrameWithInitial = encode(
         allocator = allocator,
         streamId = streamId,
         fragmentFollows = fragmentFollows,
@@ -27,7 +27,7 @@ object RequestStreamFrame {
         requestN: Int,
         data: ByteBuf,
         metadata: ByteBuf? = null
-    ): RequestFrame = RequestFrame.encode(
+    ): RequestFrameWithInitial = RequestFrame.encode(
         allocator,
         frameType = FrameType.REQUEST_STREAM,
         streamId = streamId,
@@ -37,6 +37,6 @@ object RequestStreamFrame {
         requestN = requestN,
         data = data,
         metadata = metadata
-    )
+    ).withInitial
 
 }

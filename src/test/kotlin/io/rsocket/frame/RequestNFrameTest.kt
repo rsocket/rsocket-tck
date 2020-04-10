@@ -4,7 +4,7 @@ import io.netty.buffer.*
 import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.*
 
-class RequestNFrameFlyweightTest {
+class RequestNFrameTest {
     @Test
     fun testEncoding() {
         var frame = RequestNFrame.encode(allocator, 1, 5).buffer

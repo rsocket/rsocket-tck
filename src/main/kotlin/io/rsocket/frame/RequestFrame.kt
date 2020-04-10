@@ -73,7 +73,7 @@ inline class RequestFrame(val buffer: ByteBuf) {
 }
 
 inline class RequestFrameWithInitial(val buffer: ByteBuf) {
-    private val header: FrameHeader get() = FrameHeader(buffer)
+    val header: FrameHeader get() = FrameHeader(buffer)
     private val reader: DataAndMetadataReader get() = DataAndMetadataReader(buffer)
 
     val initialRequestN: Int

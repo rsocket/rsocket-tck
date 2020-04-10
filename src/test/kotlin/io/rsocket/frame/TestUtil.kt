@@ -9,4 +9,4 @@ fun TextBuffer(text: String): ByteBuf = ByteBufUtil.writeUtf8(allocator, text)
 
 fun ByteBuf.text(): String = toString(Charsets.UTF_8)
 
-fun bufferOf(vararg bytes: Byte): ByteBuf = Unpooled.wrappedBuffer(bytes)
+fun bufferOf(vararg bytes: Byte): ByteBuf = Unpooled.copiedBuffer(bytes)
