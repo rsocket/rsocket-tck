@@ -10,8 +10,8 @@ object RequestChannelFrame {
         fragmentFollows: Boolean,
         complete: Boolean,
         requestN: Long,
-        metadata: ByteBuf?,
-        data: ByteBuf
+        data: ByteBuf,
+        metadata: ByteBuf? = null
     ): RequestFrame = RequestFrame.encode(
         allocator = allocator,
         frameType = FrameType.REQUEST_CHANNEL,

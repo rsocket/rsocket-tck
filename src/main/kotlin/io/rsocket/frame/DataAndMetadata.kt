@@ -16,7 +16,7 @@ inline class DataAndMetadata(val buffer: ByteBuf) {
     }
 
     companion object {
-        fun encode(allocator: ByteBufAllocator, header: ByteBuf, metadata: ByteBuf, data: ByteBuf): DataAndMetadata {
+        fun encode(allocator: ByteBufAllocator, header: ByteBuf, data: ByteBuf, metadata: ByteBuf): DataAndMetadata {
             header.writeLength(metadata.readableBytes())
             return DataAndMetadata(allocator.compose(header, metadata, data))
         }

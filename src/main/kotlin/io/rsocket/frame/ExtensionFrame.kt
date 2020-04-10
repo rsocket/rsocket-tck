@@ -39,7 +39,13 @@ inline class ExtensionFrame(val buffer: ByteBuf) {
 
     companion object {
 
-        fun encode(allocator: ByteBufAllocator, streamId: Int, extendedType: Int, metadata: ByteBuf?, data: ByteBuf?): ExtensionFrame {
+        fun encode(
+            allocator: ByteBufAllocator,
+            streamId: Int,
+            extendedType: Int,
+            data: ByteBuf? = null,
+            metadata: ByteBuf? = null
+        ): ExtensionFrame {
             var flags = FrameHeader.Flags.I
 
             if (metadata != null) flags = flags or FrameHeader.Flags.M
@@ -53,7 +59,7 @@ inline class ExtensionFrame(val buffer: ByteBuf) {
                     null -> header
                     else -> when (metadata) {
                         null -> DataAndMetadata.encodeOnlyData(allocator, header, data)
-                        else -> DataAndMetadata.encode(allocator, header, metadata, data)
+                        else -> DataAndMetadata.encode(allocator, header, data, metadata)
                     }.buffer
                 }
             )

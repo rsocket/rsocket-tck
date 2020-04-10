@@ -187,7 +187,7 @@ enum class FrameType(val encodedType: Int, flags: Int = Flags.EMPTY) {
     /**
      * Whether the frame type starts with an initial `requestN`.
      *
-     * @return wether the frame type starts with an initial `requestN`
+     * @return wether the frame type starts with an initial `requestN`s
      */
     val hasInitialRequestN: Boolean = flags.checkFlag(Flags.HAS_INITIAL_REQUEST_N)
 

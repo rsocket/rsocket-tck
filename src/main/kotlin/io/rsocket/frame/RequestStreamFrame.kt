@@ -9,15 +9,15 @@ object RequestStreamFrame {
         streamId: Int,
         fragmentFollows: Boolean,
         requestN: Long,
-        metadata: ByteBuf?,
-        data: ByteBuf
+        data: ByteBuf,
+        metadata: ByteBuf? = null
     ): RequestFrame = encode(
         allocator = allocator,
         streamId = streamId,
         fragmentFollows = fragmentFollows,
         requestN = if (requestN > Int.MAX_VALUE) Int.MAX_VALUE else requestN.toInt(),
-        metadata = metadata,
-        data = data
+        data = data,
+        metadata = metadata
     )
 
     fun encode(
@@ -25,8 +25,8 @@ object RequestStreamFrame {
         streamId: Int,
         fragmentFollows: Boolean,
         requestN: Int,
-        metadata: ByteBuf?,
-        data: ByteBuf
+        data: ByteBuf,
+        metadata: ByteBuf? = null
     ): RequestFrame = RequestFrame.encode(
         allocator,
         frameType = FrameType.REQUEST_STREAM,

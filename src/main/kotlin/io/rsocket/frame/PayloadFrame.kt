@@ -11,7 +11,7 @@ object PayloadFrame {
         complete: Boolean,
         next: Boolean,
         data: ByteBuf,
-        metadata: ByteBuf?
+        metadata: ByteBuf? = null
     ): RequestFrame = RequestFrame.encode(
         allocator = allocator,
         frameType = FrameType.PAYLOAD,
@@ -28,7 +28,7 @@ object PayloadFrame {
         allocator: ByteBufAllocator,
         streamId: Int,
         data: ByteBuf,
-        metadata: ByteBuf?
+        metadata: ByteBuf? = null
     ): RequestFrame = RequestFrame.encode(
         allocator = allocator,
         frameType = FrameType.PAYLOAD,
@@ -45,7 +45,7 @@ object PayloadFrame {
         allocator: ByteBufAllocator,
         streamId: Int,
         data: ByteBuf,
-        metadata: ByteBuf?
+        metadata: ByteBuf? = null
     ): RequestFrame = RequestFrame.encode(
         allocator = allocator,
         frameType = FrameType.PAYLOAD,

@@ -87,7 +87,7 @@ inline class FrameHeader(val buffer: ByteBuf) {
 
         private const val FRAME_FLAGS_MASK: Int = 1023
         private const val FRAME_TYPE_BITS: Int = 6
-        internal const val FRAME_TYPE_SHIFT: Int = 16 - FRAME_TYPE_BITS
+        const val FRAME_TYPE_SHIFT: Int = 16 - FRAME_TYPE_BITS
 
         private val disableFrameTypeCheck: Boolean = getBoolean("io.rsocket.frames.disableFrameTypeCheck")
 

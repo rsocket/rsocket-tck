@@ -8,8 +8,8 @@ object RequestResponseFrame {
         allocator: ByteBufAllocator,
         streamId: Int,
         fragmentFollows: Boolean,
-        metadata: ByteBuf?,
-        data: ByteBuf
+        data: ByteBuf,
+        metadata: ByteBuf? = null
     ): RequestFrame = RequestFrame.encode(
         allocator = allocator,
         frameType = FrameType.REQUEST_RESPONSE,

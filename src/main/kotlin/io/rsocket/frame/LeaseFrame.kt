@@ -3,7 +3,7 @@ package io.rsocket.frame
 import io.netty.buffer.*
 
 inline class LeaseFrame(val buffer: ByteBuf) {
-    private val header: FrameHeader get() = FrameHeader(buffer, FrameType.LEASE)
+    val header: FrameHeader get() = FrameHeader(buffer, FrameType.LEASE)
 
     val ttl: Int
         get() {
@@ -49,7 +49,7 @@ inline class LeaseFrame(val buffer: ByteBuf) {
             return LeaseFrame(
                 when (metadata) {
                     null -> header
-                    else -> DataAndMetadata.encodeOnlyData(allocator, header, metadata).buffer
+                    else -> DataAndMetadata.encodeOnlyMetadata(allocator, header, metadata).buffer
                 }
             )
         }
