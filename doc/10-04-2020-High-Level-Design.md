@@ -1,8 +1,6 @@
 # Summary
 
-The goal of the RSocket TCK is to allow developers implement RSocket protocol in
-their favoured programming language and be sure, that it follows RSocket 
-specification.
+The purpose of the RSocket Technology Compatibility Kit (from here on referred to as: the TCK) is to guide and help RSocket library implementers to validate their implementations against the rules defined in [the Protocol Specification](https://github.com/rsocket/rsocket).
 
 #Motivation
 
