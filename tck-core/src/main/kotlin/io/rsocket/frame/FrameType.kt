@@ -151,17 +151,6 @@ enum class FrameType(val encodedType: Int, flags: Int = Flags.EMPTY) {
      */
     RESUME_OK(0x0E),
 
-    // SYNTHETIC PAYLOAD TYPES
-
-    /** A [.PAYLOAD] frame with `NEXT` flag set.  */
-    NEXT(0xA0, Flags.CAN_HAVE_DATA or Flags.CAN_HAVE_METADATA or Flags.IS_FRAGMENTABLE),
-
-    /** A [.PAYLOAD] frame with `COMPLETE` flag set.  */
-    COMPLETE(0xB0),
-
-    /** A [.PAYLOAD] frame with `NEXT` and `COMPLETE` flags set.  */
-    NEXT_COMPLETE(0xC0, Flags.CAN_HAVE_DATA or Flags.CAN_HAVE_METADATA or Flags.IS_FRAGMENTABLE),
-
     /**
      * Used To Extend more frame types as well as extensions.
      *

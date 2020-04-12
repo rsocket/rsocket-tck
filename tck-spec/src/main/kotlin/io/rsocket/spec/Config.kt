@@ -2,15 +2,19 @@ package io.rsocket.spec
 
 import org.spekframework.spek2.dsl.*
 
-//read from file
+//read from json/yaml
 val config = Config(
-    listOf(
+    withLength = false,
+    keys = listOf(
         "setup.reject",
         "setup.accept.streamId0"
     )
 )
 
-class Config(keys: List<String>) {
+class Config(
+    val withLength: Boolean,
+    keys: List<String>
+) {
     private val casesToRun = keys.flatMap(String::splitKeys)
 
     private fun check(key: String): Boolean {

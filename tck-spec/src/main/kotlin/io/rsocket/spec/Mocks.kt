@@ -6,7 +6,7 @@ import io.rsocket.frame.shared.*
 import kotlinx.coroutines.*
 import kotlin.time.*
 
-object MockErrorContext : LowLevelCaseContext {
+object MockErrorTransport : Transport {
     override suspend fun send(buffer: ByteBuf) {
 
     }
@@ -21,7 +21,7 @@ object MockErrorContext : LowLevelCaseContext {
     ).buffer(ByteBufAllocator.DEFAULT)
 }
 
-object MockDelayContext : LowLevelCaseContext {
+object MockDelayTransport : Transport {
     override suspend fun send(buffer: ByteBuf) {
 
     }

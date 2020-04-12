@@ -13,7 +13,7 @@ object SetupSpec : Spek({
     describe("Setup", config.skipIf("setup")) {
 
         describe("reject connection", config.skipIf("setup.reject")) {
-            val context by memoized { MockErrorContext }
+            val transport by memoized { MockErrorTransport }
 
             case("with ERROR[INVALID_SETUP] if SETUP stream id > 0", config.skipIf("setup.reject.streamIdPositive")) {
                 val setup = SetupFrame(
@@ -49,12 +49,48 @@ object SetupSpec : Spek({
                     data = TextBuffer("failed?") //TODO not need to check?
                 )
             }
+
+            //ignored while with length = false
+            withLengthCase("with ERROR[INVALID_SETUP] if SETUP stream id > 0", config.skipIf("setup.reject.streamIdPositive")) {
+                val setup = SetupFrame(
+                    header = FrameHeader(
+                        streamId = 1, //wrong id for setup frame
+                        flags = SetupFlags(
+                            resume = false,
+                            lease = false,
+                            metadata = false
+                        )
+                    ),
+                    version = Version(1, 0),
+                    keepAlive = KeepAlive(
+                        interval = 500.milliseconds,
+                        maxLifetime = 5.seconds
+                    ),
+                    resumeToken = null,
+                    metadataMimeType = MimeType("application/binary"),
+                    dataMimeType = MimeType("application/binary"),
+                    payload = Payload(
+                        metadata = null,
+                        data = bufferOf(1, 2, 3)
+                    )
+                )
+                send(setup)
+                val error = receive().frame.asError() //here validated that frame type is [FrameType.ERROR]
+                error expect ErrorFrame(
+                    header = FrameHeader(
+                        streamId = 0,
+                        flags = UntypedFlags.Empty
+                    ),
+                    code = DefinedErrorCode.InvalidSetup,
+                    data = TextBuffer("failed?") //TODO not need to check?
+                )
+            }
         }
 
         describe("accept connection", config.skipIf("setup.accept")) {
-            val context by memoized { MockDelayContext }
+            val transport by memoized { MockDelayTransport }
 
-            case("with ERROR[INVALID_SETUP] if SETUP stream id > 0", config.skipIf("setup.accept.streamId0")) {
+            case("no ERROR frame for 1 second", config.skipIf("setup.accept.streamId0")) {
                 val setup = SetupFrame(
                     header = FrameHeader(
                         streamId = 1, //wrong id for setup frame

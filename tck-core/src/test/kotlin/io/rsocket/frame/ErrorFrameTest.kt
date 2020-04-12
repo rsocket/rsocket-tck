@@ -14,8 +14,13 @@ class ErrorFrameTest {
             FrameHeader(1, UntypedFlags.Empty),
             DefinedErrorCode.ApplicationError,
             TextBuffer("d")
-        ).buffer(allocator)
-        expectThat(ByteBufUtil.hexDump(error)).isEqualTo("000000012c000000020164")
+        )
+        val buffer = error.buffer(allocator)
+        val newError = buffer.frame().asError()
+
+        error expect newError
+
+        expectThat(ByteBufUtil.hexDump(buffer)).isEqualTo("000000012c000000020164")
     }
 
     @Test
@@ -28,5 +33,10 @@ class ErrorFrameTest {
         val newError = error.buffer(allocator).frame().asError()
 
         error expect newError
+
+        expectThat(newError) {
+            get { code.value }.isEqualTo(0x00000201)
+            get { data.text() }.isEqualTo("d")
+        }
     }
 }

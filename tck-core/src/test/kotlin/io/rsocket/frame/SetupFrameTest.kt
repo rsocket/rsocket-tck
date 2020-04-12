@@ -1,5 +1,6 @@
 package io.rsocket.frame
 
+import io.rsocket.expect.*
 import io.rsocket.expect.frame.*
 import io.rsocket.frame.shared.*
 import org.junit.jupiter.api.*
@@ -23,6 +24,17 @@ class SetupFrameTest {
         val newSetup = setup.buffer(allocator).frame().asSetup()
 
         setup expect newSetup
+
+        expectThat(newSetup) {
+            get { version }.isEqualTo(Version.Current)
+            get { keepAlive.interval.inMilliseconds }.isEqualTo(5.0)
+            get { keepAlive.maxLifetime.inMilliseconds }.isEqualTo(500.0)
+            get { metadataMimeType.text }.isEqualTo("metadata_type")
+            get { dataMimeType.text }.isEqualTo("data_type")
+            get { resumeToken }.isEqualTo(null)
+            get { payload.metadata?.value }.isEqualToBuffer(bufferOf(1, 2, 3, 4))
+            get { payload.data }.isEqualToBuffer(bufferOf(5, 4, 3))
+        }
     }
 
     @Test
@@ -41,6 +53,10 @@ class SetupFrameTest {
         val newSetup = setup.buffer(allocator).frame().asSetup()
 
         setup expect newSetup
-        expectThat(newSetup.resumeToken?.token).isEqualTo(token)
+
+        expectThat(newSetup) {
+            get { resumeToken?.token }.isEqualTo(token)
+            get { payload.data }.isEqualTo(bufferOf(5, 4, 3))
+        }
     }
 }

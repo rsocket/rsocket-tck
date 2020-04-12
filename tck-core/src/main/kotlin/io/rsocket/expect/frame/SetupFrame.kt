@@ -2,6 +2,7 @@ package io.rsocket.expect.frame
 
 import io.rsocket.expect.*
 import io.rsocket.frame.*
+import io.rsocket.frame.shared.*
 import strikt.api.*
 import strikt.assertions.*
 

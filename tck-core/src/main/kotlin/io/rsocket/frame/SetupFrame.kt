@@ -4,7 +4,7 @@ import io.netty.buffer.*
 import io.rsocket.frame.shared.*
 import kotlin.time.*
 
-data class SetupFrame constructor(
+data class SetupFrame(
     override val header: FrameHeader<SetupFlags>,
     val version: Version,
     val keepAlive: KeepAlive,
@@ -29,11 +29,7 @@ data class SetupFrame constructor(
             writeUtf8(dataMimeType.text)
             payload.metadata?.length?.let(this::writeLength)
         }
-
-        return when (payload.metadata) {
-            null -> allocator.compose(header, payload.data)
-            else -> allocator.compose(header, payload.metadata.value, payload.data)
-        }
+        return allocator.compose(header, payload)
     }
 }
 
@@ -44,41 +40,17 @@ fun RawFrame.asSetup(): SetupFrame = typed(FrameType.SETUP) {
         lease = untypedFlags check SetupFlag.HonorLease,
         metadata = untypedFlags check CommonFlag.Metadata
     )
-    val version = Version(readInt())
-    val keepAlive = KeepAlive(
-        interval = readInt().milliseconds,
-        maxLifetime = readInt().milliseconds
-    )
 
-    val resumeToken = if (flags.resume) {
-        val length = readShort()
-        ResumeToken(
-            token = readSlice(length.toInt() and 0xFFFF),
-            length = length
-        )
-    } else null
+    val version = readVersion()
+    val keepAlive = readKeepAlive()
 
-    val metadataMimeLength = readByte()
-    val metadataMimeType = MimeType(
-        text = readSlice(metadataMimeLength.toInt()).toString(Charsets.UTF_8),
-        length = metadataMimeLength
-    )
-    val dataMimeLength = readByte()
-    val dataMimeType = MimeType(
-        text = readSlice(dataMimeLength.toInt()).toString(Charsets.UTF_8),
-        length = dataMimeLength
-    )
-    val payloadMetadata = if (flags.metadata) {
-        val length = readLength()
-        PayloadMetadata(
-            value = readSlice(length),
-            length = length
-        )
-    } else null
-    val payload = Payload(
-        metadata = payloadMetadata,
-        data = readableBytes().takeIf { it > 0 }?.let(this::readSlice) ?: Unpooled.EMPTY_BUFFER
-    )
+    val resumeToken = if (flags.resume) readResumeToken() else null
+
+    val metadataMimeType = readMimeType()
+    val dataMimeType = readMimeType()
+
+    val payload = readPayload(flags.metadata)
+
     SetupFrame(
         header = header.withFlags(flags),
         version = version,
@@ -110,13 +82,3 @@ data class SetupFlags(
     SetupFlag.HonorLease setIf lease
     CommonFlag.Metadata setIf metadata
 })
-
-data class MimeType(
-    val text: String,
-    val length: Byte = ByteBufUtil.utf8Bytes(text).toByte()
-)
-
-data class KeepAlive(
-    val interval: Duration,
-    val maxLifetime: Duration
-)
