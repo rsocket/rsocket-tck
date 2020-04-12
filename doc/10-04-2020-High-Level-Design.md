@@ -5,9 +5,8 @@ The purpose of the RSocket Technology Compatibility Kit (from here on referred t
 
 # Detailed Design
 
-To address issues that implementations were compliant with protocol 
-specification we have to introduce a tool (TCK). TCK should use black-box 
-testing against different implementations.
+The TCK designed to have two independent parts. 
+The first one is a test runner in the form of a CLI tool along with a form of extendable test suites. The second part is a driver, or simply saying a set of responses to logical interactions which allows ensuring protocol correctness. Please note, that the first part is well specified, where the second part lies on the implementors.
 
 ## Testing network communication
 
