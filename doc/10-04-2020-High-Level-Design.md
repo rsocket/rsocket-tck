@@ -2,13 +2,6 @@
 
 The purpose of the RSocket Technology Compatibility Kit (from here on referred to as: the TCK) is to guide and help RSocket library implementers to validate their implementations against the rules defined in [the Protocol Specification](https://github.com/rsocket/rsocket).
 
-#Motivation
-
-Reactive programming is becoming popular since 2015. That year, the design of 
-RSocket protocol had been started. Protocol pushes reactive semantic to the
-network. Lots of engineers worked on implementations of RSocket protocol in 
-different language. There is no way to check if implementation is compliant with
-protocol specification.
 
 # Detailed Design
 
