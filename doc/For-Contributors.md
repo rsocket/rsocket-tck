@@ -27,4 +27,4 @@ precise frames ordering and format if states otherwise in spec)
 
 ## Testing Client Only Implementations
 
-![](https://www.websequencediagrams.com/files/render?link=2ULQtZY1gDjOeuVlezjuWNFzxfUhQehUMEfSx4kqXJadK3RZgjpXYC4UvsqR3W9p)
+![](https://www.websequencediagrams.com/files/render?link=Fww0YouzGBbr9it9lWK89uGnpqkaNdCqWp3rlUcx6wQ6AdlHwF22QsYHcbSiHYRP)
