@@ -1,39 +1,62 @@
 plugins {
-    id 'org.jetbrains.kotlin.jvm' version '1.3.71'
-    id 'com.github.ben-manes.versions' version '0.28.0'
+    id 'org.jetbrains.kotlin.jvm' version "$kotlin_version"
+    id 'com.github.ben-manes.versions' version "$versions_updates_version"
 }
 
 group 'io.rsocket'
 version '1.0-SNAPSHOT'
 
-repositories {
-    mavenCentral()
+subprojects {
+    apply plugin: "org.jetbrains.kotlin.jvm"
+
+    dependencies {
+        implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinx_coroutines_version")
+
+        implementation("io.strikt:strikt-core:$strikt_version") //assertion lib
+    }
+}
+
+allprojects {
+    repositories {
+        jcenter()
+        mavenCentral()
+    }
+
+    dependencies {
+        implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version")
+        implementation("io.netty:netty-buffer:$netty_version")
+    }
+
+    compileKotlin {
+        kotlinOptions {
+            jvmTarget = "1.8"
+            freeCompilerArgs = [
+                    "-XXLanguage:+InlineClasses",
+                    "-Xuse-experimental=kotlin.time.ExperimentalTime"
+            ]
+        }
+    }
+
+    compileTestKotlin {
+        kotlinOptions {
+            jvmTarget = "1.8"
+            freeCompilerArgs = [
+                    "-XXLanguage:+InlineClasses",
+                    "-Xuse-experimental=kotlin.time.ExperimentalTime"
+            ]
+        }
+    }
+
 }
 
 dependencies {
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.3.71"
-    implementation 'io.netty:netty-buffer:4.1.48.Final'
-
-    testImplementation "org.junit.jupiter:junit-jupiter:5.6.2"
-    testImplementation 'org.assertj:assertj-core:3.13.2'
+    testImplementation("org.junit.jupiter:junit-jupiter:$junit_version")
+    testImplementation("org.assertj:assertj-core:$assertj_version")
 }
 
 tasks.test {
     useJUnitPlatform()
     testLogging {
         events("passed", "skipped", "failed")
-    }
-}
-
-compileKotlin {
-    kotlinOptions {
-        jvmTarget = "1.8"
-        freeCompilerArgs = ["-XXLanguage:+InlineClasses"]
-    }
-}
-compileTestKotlin {
-    kotlinOptions {
-        jvmTarget = "1.8"
-        freeCompilerArgs = ["-XXLanguage:+InlineClasses"]
     }
 }

@@ -1,0 +1,10 @@
+dependencies {
+    testImplementation("org.junit.jupiter:junit-jupiter:$junit_version")
+}
+
+tasks.test {
+    useJUnitPlatform()
+    testLogging {
+        events("passed", "skipped", "failed")
+    }
+}
