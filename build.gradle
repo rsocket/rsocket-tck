@@ -15,8 +15,18 @@
  */
 
 plugins {
+    id 'org.jetbrains.kotlin.jvm' version "$kotlin_version"
+    id 'com.github.ben-manes.versions' version "$versions_updates_version"
     id 'com.jfrog.artifactory' version '4.13.0' apply false
     id 'com.jfrog.bintray' version '1.8.5' apply false
+}
+
+subprojects {
+    apply plugin: "org.jetbrains.kotlin.jvm"
+    dependencies {
+        implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinx_coroutines_version")
+        implementation("io.strikt:strikt-core:$strikt_version") //assertion lib
+    }
 }
 
 allprojects {
@@ -33,4 +43,39 @@ allprojects {
         enabled = false
     }
 
+    compileKotlin {
+        kotlinOptions {
+            jvmTarget = "1.8"
+            freeCompilerArgs = [
+                    "-XXLanguage:+InlineClasses",
+                    "-Xuse-experimental=kotlin.time.ExperimentalTime"
+            ]
+        }
+    }
+
+    compileTestKotlin {
+        kotlinOptions {
+            jvmTarget = "1.8"
+            freeCompilerArgs = [
+                    "-XXLanguage:+InlineClasses",
+                    "-Xuse-experimental=kotlin.time.ExperimentalTime"
+            ]
+        }
+    }
+
+    dependencies {
+        testImplementation("org.junit.jupiter:junit-jupiter:$junit_version")
+        testRuntime("org.junit.jupiter:junit-jupiter-engine:$junit_version")
+        testRuntime("org.junit.vintage:junit-vintage-engine:$junit_version")
+        testImplementation("org.assertj:assertj-core:$assertj_version")
+        implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version")
+        implementation("io.netty:netty-buffer:$netty_version")
+    }
+}
+
+tasks.test {
+    useJUnitPlatform()
+    testLogging {
+        events("passed", "skipped", "failed")
+    }
 }

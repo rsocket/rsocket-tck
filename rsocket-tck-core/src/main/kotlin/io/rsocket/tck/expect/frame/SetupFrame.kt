@@ -13,7 +13,10 @@ infix fun SetupFrame.expect(expected: SetupFrame): Unit = expectThat(this) {
     get("resume token", SetupFrame::resumeToken).isEqualToResumeToken(expected.resumeToken)
     get("metadata mime type", SetupFrame::metadataMimeType).isEqualTo(expected.metadataMimeType)
     get("data mime type", SetupFrame::dataMimeType).isEqualTo(expected.dataMimeType)
-    get("payload", SetupFrame::payload).isEqualToPayload(expected.payload)
+
+    get("payload", SetupFrame::payload).isNotNull().and {
+        isEqualToPayload(expected.payload!!)
+    }
 }
 
 private val setupFlagsAssertion: FlagsAssertion<SetupFlags> = { expected ->

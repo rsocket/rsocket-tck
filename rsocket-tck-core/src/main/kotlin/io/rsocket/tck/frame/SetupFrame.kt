@@ -1,17 +1,25 @@
 package io.rsocket.tck.frame
 
-import io.netty.buffer.*
+import io.netty.buffer.ByteBuf
+import io.netty.buffer.ByteBufAllocator
 import io.rsocket.tck.frame.shared.*
-import kotlin.time.*
+import kotlin.time.DurationUnit
+
+fun create(
+    header: FrameHeader<SetupFlags>,
+    version: Version,
+    keepAlive: KeepAlive,
+    dataMimeType: MimeType
+): SetupFrame = SetupFrame(header, version, keepAlive, null, null, dataMimeType, null)
 
 data class SetupFrame(
     override val header: FrameHeader<SetupFlags>,
     val version: Version,
     val keepAlive: KeepAlive,
-    val resumeToken: ResumeToken?,
-    val metadataMimeType: MimeType,
+    val resumeToken: ResumeToken? = null,
+    val metadataMimeType: MimeType? = null,
     val dataMimeType: MimeType,
-    val payload: Payload
+    val payload: Payload? = null
 ) : Frame<SetupFlags>(FrameType.SETUP) {
 
     override fun buffer(allocator: ByteBufAllocator): ByteBuf {
@@ -23,13 +31,22 @@ data class SetupFrame(
                 writeShort(it.length.toInt())
                 it.token.preview { this@headerBuffer.writeBytes(this) }
             }
-            writeByte(metadataMimeType.length.toInt())
-            writeUtf8(metadataMimeType.text)
+            if (metadataMimeType != null) {
+                writeByte(metadataMimeType.length.toInt())
+                writeUtf8(metadataMimeType.text)
+            }
             writeByte(dataMimeType.length.toInt())
             writeUtf8(dataMimeType.text)
-            payload.metadata?.length?.let(this::writeLength)
+
+            payload?.metadata?.length?.let(this::writeLength)
         }
         return allocator.compose(header, payload)
+    }
+
+    companion object {
+        fun decode(buffer: ByteBuf): SetupFrame {
+            return buffer.frame().asSetup()
+        }
     }
 }
 

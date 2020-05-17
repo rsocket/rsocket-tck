@@ -12,9 +12,12 @@ data class PayloadMetadata(
     val length: Int = value.readableBytes()
 )
 
-fun ByteBufAllocator.compose(header: ByteBuf, payload: Payload): ByteBuf = when (payload.metadata) {
-    null -> compose(header, payload.data)
-    else -> compose(header, payload.metadata.value, payload.data)
+fun ByteBufAllocator.compose(header: ByteBuf, payload: Payload?): ByteBuf = when (payload) {
+    null -> header
+    else -> when (payload.metadata) {
+        null -> compose(header, payload.data)
+        else -> compose(header, payload.metadata.value, payload.data)
+    }
 }
 
 fun ByteBuf.readPayloadMetadata(): PayloadMetadata {
