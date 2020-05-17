@@ -1,6 +1,6 @@
 # RSocket TCK
 
-[![Build Status](https://travis-ci.org/rsocket/rsocket-tck.svg?branch=master)](https://travis-ci.org/rsocket/rsocket-tck)
+[![Build Status](https://github.com/rsocket/rsocket-tck/workflows/Java%20CI/badge.svg)](https://github.com/rsocket/rsocket-tck/actions?query=workflow%3A%22Java+CI%22)
 
 The goal of this project is to provide a reliable polyglot testing suite to 
 verify both existing and upcoming versions of servers and clients that use the 
