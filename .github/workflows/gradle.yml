@@ -34,7 +34,7 @@ jobs:
     - name: Build with Gradle
       run: ./gradlew clean build
     - name: Publish to Artifactory Packages
-      run: ./gradlew artifactoryPublish
+      run: ./gradlew -PbintrayUser="${bintrayUser}" -PbintrayKey="${bintrayKey}" artifactoryPublish
       env:
         bintrayUser: ${{ secrets.bintrayUser }}
         bintrayKey: ${{ secrets.bintrayKey }}

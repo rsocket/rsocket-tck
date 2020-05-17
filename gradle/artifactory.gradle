@@ -13,35 +13,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-println(project.hasProperty('bintrayUser'))
 if (project.hasProperty('bintrayUser') && project.hasProperty('bintrayKey')) {
 
-    subprojects {
-        plugins.withId('com.jfrog.artifactory') {
-            artifactory {
-                publish {
-                    contextUrl = 'https://oss.jfrog.org'
+    plugins.withId('com.jfrog.artifactory') {
+        artifactory {
+            publish {
+                contextUrl = 'https://oss.jfrog.org'
 
-                    repository {
-                        repoKey = 'oss-snapshot-local'
+                repository {
+                    repoKey = 'oss-snapshot-local'
 
-                        // Credentials for oss.jfrog.org are a user's Bintray credentials
-                        username = project.property('bintrayUser')
-                        password = project.property('bintrayKey')
-                    }
+                    // Credentials for oss.jfrog.org are a user's Bintray credentials
+                    username = project.property('bintrayUser')
+                    password = project.property('bintrayKey')
+                }
 
-                    defaults {
-                        publications(publishing.publications.maven)
-                    }
+                defaults {
+                    publications(publishing.publications.maven)
+                }
 
-                    if (project.hasProperty('buildNumber')) {
-                        clientConfig.info.setBuildNumber(project.property('buildNumber').toString())
-                    }
+                if (project.hasProperty('buildNumber')) {
+                    clientConfig.info.setBuildNumber(project.property('buildNumber').toString())
                 }
             }
-            tasks.named("artifactoryPublish").configure {
-                onlyIf { System.getenv('SKIP_RELEASE') != "true" }
-            }
+        }
+        tasks.named("artifactoryPublish").configure {
+            onlyIf { System.getenv('SKIP_RELEASE') != "true" }
         }
     }
 }
