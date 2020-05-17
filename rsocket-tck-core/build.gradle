@@ -1,0 +1,43 @@
+plugins {
+    id 'org.jetbrains.kotlin.jvm' version "$kotlin_version"
+    id 'com.github.ben-manes.versions' version "$versions_updates_version"
+}
+
+apply plugin: "org.jetbrains.kotlin.jvm"
+
+dependencies {
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$kotlinx_coroutines_version")
+
+    implementation("io.strikt:strikt-core:$strikt_version") //assertion lib
+    testImplementation("org.junit.jupiter:junit-jupiter:$junit_version")
+
+    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version")
+    implementation("io.netty:netty-buffer:$netty_version")
+}
+
+compileKotlin {
+    kotlinOptions {
+        jvmTarget = "1.8"
+        freeCompilerArgs = [
+                "-XXLanguage:+InlineClasses",
+                "-Xuse-experimental=kotlin.time.ExperimentalTime"
+        ]
+    }
+}
+
+compileTestKotlin {
+    kotlinOptions {
+        jvmTarget = "1.8"
+        freeCompilerArgs = [
+                "-XXLanguage:+InlineClasses",
+                "-Xuse-experimental=kotlin.time.ExperimentalTime"
+        ]
+    }
+}
+
+tasks.test {
+    useJUnitPlatform()
+    testLogging {
+        events("passed", "skipped", "failed")
+    }
+}

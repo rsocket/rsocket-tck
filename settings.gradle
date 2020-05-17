@@ -1,4 +1,5 @@
 rootProject.name = 'rsocket-tck'
 
-include 'tck-core'
-include 'tck-spec'
+include 'rsocket-tck-core'
+include 'rsocket-tck-spec'
+include 'rsocket-tck-features'
