@@ -1,4 +1,4 @@
-package io.rsocket.tck.tck.spec
+package io.rsocket.tck.spec
 
 import org.spekframework.spek2.dsl.*
 

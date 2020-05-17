@@ -1,6 +1,6 @@
 package io.rsocket.tck.frame
 
-import io.rsocket.frame.shared.*
+import io.rsocket.tck.frame.shared.*
 
 /**
  * Types of Frame that can be sent.

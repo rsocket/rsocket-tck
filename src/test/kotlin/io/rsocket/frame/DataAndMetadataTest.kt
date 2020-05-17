@@ -1,4 +1,4 @@
-package io.rsocket.frame
+package io.rsocket.tck.frame
 
 import org.junit.jupiter.api.*
 import org.junit.jupiter.api.Assertions.*

@@ -1,7 +1,7 @@
 package io.rsocket.tck.frame
 
 import io.netty.buffer.*
-import io.rsocket.frame.shared.*
+import io.rsocket.tck.frame.shared.*
 
 data class LeaseFrame(
     override val header: FrameHeader<LeaseFlags>,

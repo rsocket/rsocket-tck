@@ -1,7 +1,7 @@
 package io.rsocket.tck.expect.frame
 
-import io.rsocket.expect.*
-import io.rsocket.frame.*
+import io.rsocket.tck.expect.*
+import io.rsocket.tck.frame.*
 import strikt.api.*
 import strikt.assertions.*
 

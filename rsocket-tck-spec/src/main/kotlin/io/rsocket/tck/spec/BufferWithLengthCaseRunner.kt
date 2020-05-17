@@ -1,7 +1,7 @@
-package io.rsocket.tck.tck.spec
+package io.rsocket.tck.spec
 
 import io.netty.buffer.*
-import io.rsocket.frame.shared.*
+import io.rsocket.tck.frame.shared.*
 import kotlinx.coroutines.*
 import kotlin.time.*
 

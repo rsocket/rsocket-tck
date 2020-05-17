@@ -1,8 +1,8 @@
 package io.rsocket.tck
 
-import io.rsocket.expect.frame.*
-import io.rsocket.frame.*
-import io.rsocket.frame.shared.*
+import io.rsocket.tck.expect.frame.*
+import io.rsocket.tck.frame.*
+import io.rsocket.tck.frame.shared.*
 import kotlin.time.*
 
 //just to show power of assertions

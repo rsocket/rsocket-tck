@@ -1,4 +1,4 @@
-package io.rsocket.frame
+package io.rsocket.tck.frame
 
 import io.netty.buffer.*
 import java.lang.Boolean.*

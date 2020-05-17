@@ -1,7 +1,7 @@
 package io.rsocket.tck.frame.shared
 
 import io.netty.buffer.*
-import io.rsocket.frame.*
+import io.rsocket.tck.frame.*
 import strikt.api.*
 import strikt.assertions.*
 

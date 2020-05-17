@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package io.rsocket.frame
+package io.rsocket.tck.frame
 
 /**
  * Types of Frame that can be sent.

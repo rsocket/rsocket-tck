@@ -1,4 +1,4 @@
-package io.rsocket.tck.tck.spec
+package io.rsocket.tck.spec
 
 import io.netty.buffer.*
 import kotlinx.coroutines.*

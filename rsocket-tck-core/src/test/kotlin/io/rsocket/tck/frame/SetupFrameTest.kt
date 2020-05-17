@@ -1,8 +1,8 @@
 package io.rsocket.tck.frame
 
-import io.rsocket.expect.*
-import io.rsocket.expect.frame.*
-import io.rsocket.frame.shared.*
+import io.rsocket.tck.expect.*
+import io.rsocket.tck.expect.frame.*
+import io.rsocket.tck.frame.shared.*
 import org.junit.jupiter.api.*
 import strikt.api.*
 import strikt.assertions.*

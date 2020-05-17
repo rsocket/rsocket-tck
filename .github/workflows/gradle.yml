@@ -33,7 +33,7 @@ jobs:
       run: chmod +x gradlew
     - name: Build with Gradle
       run: ./gradlew clean build
-    - name: Publish to GitHub Packages
+    - name: Publish to Artifactory Packages
       run: ./gradlew artifactoryPublish
       env:
         bintrayUser: ${{ secrets.bintrayUser }}

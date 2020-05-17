@@ -1,6 +1,6 @@
 package io.rsocket.tck.frame.shared
 
-import io.rsocket.frame.*
+import io.rsocket.tck.frame.*
 
 data class FrameHeader<F : Flags>(
     val streamId: Int,

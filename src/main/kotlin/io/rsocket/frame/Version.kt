@@ -1,4 +1,4 @@
-package io.rsocket.frame
+package io.rsocket.tck.frame
 
 @Suppress("FunctionName")
 fun Version(major: Int, minor: Int): Version = Version((major shl 16) or (minor and 0xFFFF))

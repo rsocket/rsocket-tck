@@ -1,6 +1,6 @@
 package io.rsocket.tck.expect
 
-import io.rsocket.frame.shared.*
+import io.rsocket.tck.frame.shared.*
 import strikt.api.*
 import strikt.assertions.*
 
