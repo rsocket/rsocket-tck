@@ -63,8 +63,10 @@ public class ConnectionSuccessfulEstablishment implements En {
             clientData = map;
         });
 
+        //TODO write binary  & hex parser
+        // build ByteBuf and comper it with incoming from client
         And("^server requires the following SETUP frame content$", (DataTable data) -> {
-                Map<String, String> map = data.asMap(String.class, String.class);
+            Map<String, String> map = data.asMap(String.class, String.class);
             String text = clientData.get("mime-type-data");
             expectedFrame = SetupFrameKt.create(
                     new FrameHeader<>(

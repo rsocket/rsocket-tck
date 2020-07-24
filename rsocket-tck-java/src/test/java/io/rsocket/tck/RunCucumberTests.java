@@ -14,6 +14,6 @@ import org.junit.runner.RunWith;
                 "file:../rsocket-tck-features/features/"
         }
 )
-@Ignore
+//@Ignore
 public class RunCucumberTests {
 }
