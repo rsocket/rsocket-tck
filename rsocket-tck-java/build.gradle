@@ -1,0 +1,28 @@
+plugins {
+    id 'java'
+}
+
+group 'io.rsocket'
+version '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation(project(':rsocket-tck-core'))
+    implementation(project(':rsocket-tck-features'))
+    implementation("io.projectreactor.netty:reactor-netty:0.9.7.RELEASE")
+    compile("io.cucumber:cucumber-java8:$cucumber_version")
+    compile("io.cucumber:cucumber-guice:$cucumber_version")
+    compile("org.assertj:assertj-core:3.16.0")
+    implementation("com.google.inject:guice:4.2.0")
+    implementation("io.netty:netty-all:4.1.48.Final")
+    implementation("io.rsocket:rsocket-core:1.0.1")
+    compile("io.rsocket:rsocket-transport-netty:1.0.1")
+
+    testRuntimeOnly("org.jetbrains.kotlin:kotlin-reflect:$kotlin_version")
+    testCompile("io.cucumber:cucumber-junit:$cucumber_version")
+    testImplementation("junit:junit:4.12")
+    testCompile("junit:junit:4.12")
+}
