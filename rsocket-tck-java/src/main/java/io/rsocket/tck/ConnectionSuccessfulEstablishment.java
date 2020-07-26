@@ -159,7 +159,10 @@ public class ConnectionSuccessfulEstablishment implements En {
         String result;
         if (diff > 0) {
             StringBuilder stringBuilder = new StringBuilder();
-            stringBuilder.append("0".repeat(diff));
+            for (int i = 0; i < diff; i++) {
+                stringBuilder
+                        .append("0");
+            }
             result = stringBuilder
                     .append(str)
                     .toString();
