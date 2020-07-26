@@ -18,8 +18,8 @@ dependencies {
     compile("org.assertj:assertj-core:3.16.0")
     implementation("com.google.inject:guice:4.2.0")
     implementation("io.netty:netty-all:4.1.48.Final")
-    implementation("io.rsocket:rsocket-core:1.0.0-RC7")
-    compile("io.rsocket:rsocket-transport-netty:1.0.0-RC7")
+    implementation("io.rsocket:rsocket-core:1.0.1")
+    compile("io.rsocket:rsocket-transport-netty:1.0.1")
 
     testRuntimeOnly("org.jetbrains.kotlin:kotlin-reflect:$kotlin_version")
     testCompile("io.cucumber:cucumber-junit:$cucumber_version")
